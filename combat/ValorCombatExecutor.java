@@ -1,7 +1,11 @@
 package combat;
 import character.Hero;
 import character.Monster;
+import combat.action.AttackAction;
+import combat.action.HeroAction;
+import combat.action.SpellcastAction;
 import item.Spell;
+import java.util.List;
 
 public final class ValorCombatExecutor {
     private ValorCombatExecutor(){}
@@ -55,6 +59,36 @@ public final class ValorCombatExecutor {
                 "%s casts %s on %s for %d damage.%n",
                 hero.getName(), spell.getName(), monster.getName(), damage
         );
+    }
+
+    private void resolveAction(Hero hero, HeroAction action, List<Monster> monsters){
+        if (action instanceof AttackAction){
+            AttackAction attack = (AttackAction) action;
+            Monster target = attack.getTarget();
+
+            if (!target.isAlive()){
+                return;
+            }
+
+            if (!ValorCombatRules.canAttack(hero, target)){
+                return;
+            }
+            ValorCombatExecutor.heroAttack(hero, target);
+        } else if (action instanceof SpellcastAction){
+            SpellcastAction spellcast = (SpellcastAction) action;
+            Monster target = spellcast.getTarget();
+
+            if (!target.isAlive()){
+                return;
+            }
+
+            if (!ValorCombatRules.canAttack(hero, target)){
+                return;
+            }
+
+            ValorCombatExecutor.heroCastSpell(hero, target, spellcast.getSpell());
+
+        }
     }
 
 }
