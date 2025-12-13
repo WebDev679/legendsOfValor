@@ -1,5 +1,7 @@
 package character;
 
+import combat.StatCalculator;
+
 public abstract class Monster extends Character {
     protected int damage;
     protected int defense;
@@ -14,7 +16,9 @@ public abstract class Monster extends Character {
 
     public int getDamage() { return damage; }
     public int getDefense() { return defense; }
-    public double getDodgeChance() { return dodgeChance; }
+    public double getDodgeChance() {
+        return StatCalculator.monsterDodgeChance(dodgeChance);
+    }
 
     public void reduceDamage(double factor) {
         damage = (int) (damage * factor);
