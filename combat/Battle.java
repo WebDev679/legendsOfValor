@@ -3,6 +3,7 @@ import character.Hero;
 import character.Monster;
 import character.Party;
 import item.*;
+import combat.DamageCalculator;
 
 import java.util.*;
 
@@ -216,7 +217,6 @@ public class Battle {
         // Cast
         hero.spendMana(spell.getManaCost());
         int dmg = DamageCalculator.heroSpellDamage(hero, spell, target);
-//        int dmg = calculateSpellDamage(hero, target, spell);
         target.takeDamage(dmg);
         spell.applyEffect(target);
         System.out.printf("%s casts %s on %s for %d damage.%n",
@@ -344,7 +344,6 @@ public class Battle {
             }
 
             int dmg = DamageCalculator.monsterDamage(monster, target);
-//            int dmg = calculateMonsterDamage(monster, target);
             target.takeDamage(dmg);
             System.out.printf("%s hits %s for %d damage.%n", monster.getName(), target.getName(), dmg);
         }

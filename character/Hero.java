@@ -1,6 +1,7 @@
 package character;
 
 import item.*;
+import combat.StatCalculator;
 
 public abstract class Hero extends Character {
     public int mp;
@@ -51,23 +52,23 @@ public abstract class Hero extends Character {
 
     public void gainExperience(int exp) {
         experience += exp;
-        while (experience >= level * 10) {
-            experience -= level * 10;
+        while (experience >= StatCalculator.expToNextLevel(this)) {
+            experience -= StatCalculator.expToNextLevel(this);
             levelUp();
         }
     }
 
     protected void baseLevelUp() {
         level++;
-        maxHp = level * 100;
+        maxHp = StatCalculator.newMaxHpAfterLevelUp(this);
         hp = maxHp;
 
-        maxMp = (int) (maxMp * 1.1);
+        maxMp = StatCalculator.newMaxMpAfterLevelUp(this);
         mp = maxMp;
 
-        strength = (int) (strength * 1.05);
-        dexterity = (int) (dexterity * 1.05);
-        agility = (int) (agility * 1.05);
+        strength = StatCalculator.newStatAfterLevelUp(strength);
+        dexterity = StatCalculator.newStatAfterLevelUp(dexterity);
+        agility = StatCalculator.newStatAfterLevelUp(agility);
     }
 
     protected abstract void applyClassBonusesOnLevelUp();
@@ -79,7 +80,7 @@ public abstract class Hero extends Character {
     }
 
     public double getDodgeChance() {
-        return agility * 0.002;
+        return StatCalculator.dodgeChanceFromAgility(agility);
     }
 
     public boolean spendMana(int cost) {
@@ -90,9 +91,9 @@ public abstract class Hero extends Character {
 
     public void regenAfterRound() {
         if (!isAlive()) return;
-        hp += (int) (hp * 0.1);
+        hp = StatCalculator.regen10Percent(hp);
         if (hp > maxHp) hp = maxHp;
-        mp += (int) (mp * 0.1);
+        mp = StatCalculator.regen10Percent(mp);
         if (mp > maxMp) mp = maxMp;
     }
 
@@ -111,7 +112,7 @@ public abstract class Hero extends Character {
         sb.append(String.format("STR: %d  DEX: %d  AGI: %d%n",
                 strength, dexterity, agility));
         sb.append(String.format("Gold: %d  EXP: %d/%d%n",
-                gold, experience, level * 10));
+                gold, experience, StatCalculator.expToNextLevel(this)));
         sb.append("Equipped weapon: ");
         sb.append(getEquippedWeapon() != null ? getEquippedWeapon().getName() : "None");
         sb.append("\nEquipped armor: ");
@@ -128,7 +129,7 @@ public abstract class Hero extends Character {
     public void setAgility(int agility) { this.agility = agility; }
     public void setGold(int gold) { this.gold = gold; }
     public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
-    public void setHp(int hp) { this.mp = hp; }
+    public void setHp(int hp) { this.hp = hp; }
 
     public abstract Hero createCopy();
 }
