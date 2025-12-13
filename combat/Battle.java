@@ -141,21 +141,9 @@ public class Battle {
             return;
         }
 
-        int damage = calculatePhysicalDamage(hero, target);
+        int damage = DamageCalculator.heroPhysicalDamage(hero, target);
         target.takeDamage(damage);
         System.out.printf("%s hits %s for %d damage.%n", hero.getName(), target.getName(), damage);
-    }
-
-    private int calculatePhysicalDamage(Hero hero, Monster target) {
-        int weaponDamage = 0;
-        Weapon weapon = hero.getEquippedWeapon();
-        if (weapon != null) {
-            weaponDamage = weapon.getDamage();
-        }
-        double base = (hero.getStrength() + weaponDamage) * 0.05;
-        // Simple defense factor
-        double factor = 100.0 / (100.0 + target.getDefense());
-        return Math.max(0, (int) (base * factor));
     }
 
     private void castSpell(Hero hero, List<Monster> monsters, Scanner scanner) {
@@ -227,7 +215,8 @@ public class Battle {
 
         // Cast
         hero.spendMana(spell.getManaCost());
-        int dmg = calculateSpellDamage(hero, target, spell);
+        int dmg = DamageCalculator.heroSpellDamage(hero, spell, target);
+//        int dmg = calculateSpellDamage(hero, target, spell);
         target.takeDamage(dmg);
         spell.applyEffect(target);
         System.out.printf("%s casts %s on %s for %d damage.%n",
@@ -235,13 +224,6 @@ public class Battle {
 
         // Spells are consumable
         spells.remove(sIdx);
-    }
-
-    private int calculateSpellDamage(Hero hero, Monster target, Spell spell) {
-        double dexFactor = 1.0 + hero.getDexterity() / 10000.0;
-        double base = spell.getDamage() * dexFactor;
-        double factor = 100.0 / (100.0 + target.getDefense());
-        return Math.max(0, (int) (base * factor));
     }
 
     private void usePotion(Hero hero, Scanner scanner) {
@@ -361,19 +343,11 @@ public class Battle {
                 continue;
             }
 
-            int dmg = calculateMonsterDamage(monster, target);
+            int dmg = DamageCalculator.monsterDamage(monster, target);
+//            int dmg = calculateMonsterDamage(monster, target);
             target.takeDamage(dmg);
             System.out.printf("%s hits %s for %d damage.%n", monster.getName(), target.getName(), dmg);
         }
-    }
-
-    private int calculateMonsterDamage(Monster monster, Hero hero) {
-        int armorRed = 0;
-        Armor armor = hero.getEquippedArmor();
-        if (armor != null) armorRed = armor.getDamageReduction();
-        double base = monster.getDamage() * 0.05;
-        double factor = 100.0 / (100.0 + armorRed);
-        return Math.max(0, (int) (base * factor));
     }
 
     private void endOfRoundRegen(Party party) {

@@ -1,7 +1,6 @@
 package combat;
 import character.Hero;
 import character.Monster;
-import item.Armor;
 
 public final class ValorCombatExecutor {
     private ValorCombatExecutor(){}
@@ -12,7 +11,8 @@ public final class ValorCombatExecutor {
             return;
         }
 
-        int damage = calculateMonsterDamage(monster, hero);
+        int damage = DamageCalculator.monsterDamage(monster, hero);
+
         hero.takeDamage(damage);
 
         System.out.printf(
@@ -21,15 +21,4 @@ public final class ValorCombatExecutor {
         );
     }
 
-    private static int calculateMonsterDamage(Monster monster, Hero hero) {
-        int armorRed = 0;
-        Armor armor = hero.getEquippedArmor();
-        if (armor != null){
-            armorRed = armor.getDamageReduction();
-        }
-
-        double baseDamage = monster.getDamage() * 0.05;
-        double factor = 100.0 / (100.0 + armorRed);
-        return Math.max(0, (int)(baseDamage * factor));
-    }
 }
