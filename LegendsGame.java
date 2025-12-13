@@ -17,6 +17,7 @@ public class LegendsGame {
             System.out.println("Select a game mode:");
             System.out.println("1. Monsters vs Heroes");
             System.out.println("2. Legends of Valor");
+            System.out.println("Press <q> to quit");
 
             String choice = input.nextLine().trim().toLowerCase();
             if (choice.equals("q")){
