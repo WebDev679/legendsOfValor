@@ -6,6 +6,7 @@ import util.DataLoader;
 import world.GameMap;
 import world.*;
 import combat.Battle;
+import world.Position;
 
 import java.util.*;
 
@@ -41,6 +42,8 @@ public class GameEngine {
             map = new GameMap(MAP_SIZE);
             // Ensure starting tile is accessible & not inaccessible
             map.setHeroPosition(0, 0);
+            Hero hero = party.getHeroes().get(0);
+            hero.setPosition(new Position(0, 0, 0));
 
             gameLoop(scanner);
         }
@@ -369,6 +372,8 @@ public class GameEngine {
         }
 
         map.setHeroPosition(row, col);
+        Hero hero = party.getHeroes().get(0);
+        hero.setPosition(new Position(row, col, 0));
 
         if (target instanceof MarketTile) {
             System.out.println("You entered a engine.Market tile! Press M to trade.");
