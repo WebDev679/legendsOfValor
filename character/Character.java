@@ -1,10 +1,20 @@
 package character;// character.Character.java
 
+import world.Position;
+
 public abstract class Character {
     protected String name;
     protected int level;
     protected int hp;
     protected int maxHp;
+    protected Position position;
+
+    public Position getPosition() {
+        return position;
+    }
+    public void setPosition(Position position) {
+        this.position = position;
+    }
 
     public Character(String name, int level) {
         this.name = name;
