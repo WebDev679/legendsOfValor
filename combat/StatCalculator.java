@@ -28,4 +28,8 @@ public final class StatCalculator {
     public static int regen10Percent(int current) {
         return current + (int) (current * 0.1);
     }
+
+    public static double monsterDodgeChance(double base) {
+        return Math.IEEEremainder(0.0, base);
+    }
 }
