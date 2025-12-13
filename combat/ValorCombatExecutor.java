@@ -1,6 +1,7 @@
 package combat;
 import character.Hero;
 import character.Monster;
+import item.Spell;
 
 public final class ValorCombatExecutor {
     private ValorCombatExecutor(){}
@@ -18,6 +19,41 @@ public final class ValorCombatExecutor {
         System.out.printf(
                 "%s hits %s for %d damage.%n",
                 monster.getName(), hero.getName(), damage
+        );
+    }
+
+    public static void heroAttack(Hero hero, Monster monster){
+        if (Math.random() < monster.getDodgeChance()){
+            System.out.println(monster.getName() + " dodged attack from " +  hero.getName());
+            return;
+        }
+
+        int damage = DamageCalculator.heroPhysicalDamage(hero, monster);
+
+        System.out.printf(
+                "%s hits %s for %d damage.%n",
+                hero.getName(), monster.getName(), damage
+        );
+    }
+
+    public static void heroCastSpell(Hero hero, Monster monster, Spell spell){
+        if (!hero.spendMana(spell.getManaCost())){
+            System.out.println(hero.getName() + " does not have enough mana");
+            return;
+        }
+
+        if (Math.random() < monster.getDodgeChance()){
+            System.out.println(monster.getName() + " dodged the spell from " + hero.getName());
+            return;
+        }
+
+        int damage = DamageCalculator.heroSpellDamage(hero, spell, monster);
+        monster.takeDamage(damage);
+        spell.applyEffect(monster);
+
+        System.out.printf(
+                "%s casts %s on %s for %d damage.%n",
+                hero.getName(), spell.getName(), monster.getName(), damage
         );
     }
 
