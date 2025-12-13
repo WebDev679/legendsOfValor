@@ -12,7 +12,7 @@ public class LegendsOfValorMode implements GameMode {
         GameContext gameContext = new GameContext();
         StateManager stateManager = new StateManager();
 
-        stateManager.changeState(new ExplorationState(gameContext));
+        stateManager.changeState(new ExplorationState(gameContext, stateManager));
 
         while (gameContext.gameRunning){
             stateManager.update();
