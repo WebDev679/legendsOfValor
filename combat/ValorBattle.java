@@ -44,12 +44,14 @@ public class ValorBattle {
 
         if (action instanceof AttackAction) {
             AttackAction attack = (AttackAction) action;
+            Hero attacker = attack.getAttacker();
             Monster target = attack.getTarget();
 
             if (!target.isAlive()) return;
-            if (!ValorCombatRules.canAttack(hero, target)) return;
+            if (!ValorCombatRules.canAttack(attacker, target)) return;
 
-            ValorCombatExecutor.heroAttack(hero, target);
+            ValorCombatExecutor.heroAttack(attacker, target);
+            return;
         }
     }
 
