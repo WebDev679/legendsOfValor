@@ -10,16 +10,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Handles player controlled hero actions during combat
+ *
+ * <p>This implementation of {@link HeroActionManager} gives an interactive UI for users to
+ * choose an action for each hero via standard input. </p>
+ *
+ * <p>The manager translates input into concrete {@link HeroAction} objects,
+ * which then get resolved by combat system. This decouples user interaction from battle execution flow.</p>
+ *
+ * <p>Supporte actions include attacking, potion use, spellcasting, skipping turn and quitting battle</p>
+ */
 public class PlayerActionManager implements HeroActionManager {
 
     private final Scanner scanner;
     private final List<Monster> monsters;
 
+    /**
+     * Construsts new {@code PlayerActionManager}
+     * @param scanner scanner used to read input
+     * @param monsters monster list participating in battle
+     */
     public PlayerActionManager(Scanner scanner, List<Monster> monsters) {
         this.scanner = scanner;
         this.monsters = monsters;
     }
 
+    /**
+     * Prompt player to choose action for given hero
+     * <p>This is a blocking method until a valid action is selected. Invalid input
+     * casues the menu to be displayed again</p>
+     * @param hero hero whose turn is being processed
+     * @return concrete {@link HeroAction} representing player's choice of action
+     */
     @Override
     public HeroAction nextAction(Hero hero) {
         while (true) {
@@ -52,6 +75,11 @@ public class PlayerActionManager implements HeroActionManager {
         }
     }
 
+    /**
+     * Prompt player to select and use potion from inventory
+     * @param hero hero using potion
+     * @return a {@link PotionAction} or {@code null} if selection becomes a noop
+     */
     private HeroAction choosePotion(Hero hero) {
         List <Potion> potions = new ArrayList<>();
         potions = hero.getInventory().getPotions();
@@ -73,6 +101,11 @@ public class PlayerActionManager implements HeroActionManager {
         }
     }
 
+    /**
+     * Prompt player into choosing target to attack
+     * @param hero attacking hero
+     * @return a {@link AttackAction} or {@link SkipAction} on invalid input
+     */
     private HeroAction chooseAttack(Hero hero) {
         for (int i = 0; i < monsters.size(); i++) {
             Monster m = monsters.get(i);
@@ -93,6 +126,11 @@ public class PlayerActionManager implements HeroActionManager {
     }
 
 
+    /**
+     * Prompt player to select spell and target monster
+     * @param hero spellcasting hero
+     * @return a {@link SpellcastAction} or {@link SkipAction} on failure
+     */
     private HeroAction chooseSpell(Hero hero) {
         List<Spell> spells = hero.getInventory().getSpells();
 
