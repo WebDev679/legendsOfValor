@@ -1,11 +1,17 @@
 package state;
 
+import combat.HeroActionManager;
+import combat.PlayerActionManager;
 import combat.QuitBattleException;
 import combat.ValorBattle;
+
+import java.util.Scanner;
+
 public class BattleState implements GameState {
     private final GameContext context;
     private final ValorBattle battle = new ValorBattle();
     private final StateManager stateManager;
+    private HeroActionManager previousActionManager;
 
     public BattleState(GameContext context, StateManager stateManager) {
         this.context = context;
@@ -16,6 +22,8 @@ public class BattleState implements GameState {
     @Override
     public void enter() {
         System.out.println("Entered battle phase");
+        previousActionManager = context.actionManager;
+        context.actionManager = new PlayerActionManager(new Scanner(System.in), context.monsters);
     }
 
     @Override
@@ -26,6 +34,7 @@ public class BattleState implements GameState {
                     context.monsters,
                     context.actionManager
             );
+            context.round ++;
 
         } catch (RuntimeException e) {
             context.gameRunning = false;
@@ -61,6 +70,6 @@ public class BattleState implements GameState {
 
     @Override
     public void exit() {
-
+        context.actionManager = previousActionManager;
     }
 }
