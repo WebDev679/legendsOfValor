@@ -2,6 +2,7 @@ package character;
 
 import item.*;
 import combat.StatCalculator;
+import world.Position;
 
 public abstract class Hero extends Character {
     public int mp;
@@ -12,6 +13,7 @@ public abstract class Hero extends Character {
     protected int gold;
     protected int experience;
     protected Inventory inventory = new Inventory();
+    protected Position nexusPosition;
 
     protected Hero(String name, int level, int hp, int mp, int strength,
                    int dexterity, int agility, int gold, int experience) {
@@ -26,6 +28,9 @@ public abstract class Hero extends Character {
         this.gold = gold;
         this.experience = experience;
     }
+
+    public void setNextPosition(Position p) {this.nexusPosition = p;}
+    public Position getNextPosition() {return this.nexusPosition;}
 
     public int getMp() { return mp; }
     public int getMaxMp() { return maxMp; }
