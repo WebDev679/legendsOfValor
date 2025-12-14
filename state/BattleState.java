@@ -1,5 +1,6 @@
 package state;
 
+import combat.QuitBattleException;
 import combat.ValorBattle;
 public class BattleState implements GameState {
     private final GameContext context;
@@ -30,6 +31,9 @@ public class BattleState implements GameState {
             context.gameRunning = false;
             stateManager.changeState(new GameOverState(context));
             return;
+        } catch (QuitBattleException e) {
+            context.gameRunning = false;
+            stateManager.changeState(new GameOverState(context));
         }
 
         if (context.heroReachedEnemyNexus()) {

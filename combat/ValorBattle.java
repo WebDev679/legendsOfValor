@@ -13,7 +13,7 @@ public class ValorBattle {
             List<Hero> heroes,
             List<Monster> monsters,
             HeroActionManager actionManager
-    ) {
+    ) throws QuitBattleException {
 
         PrintUtils.pause(500);
         PrintUtils.clearScreen();
@@ -43,12 +43,12 @@ public class ValorBattle {
     private void resolveHeroAction(
             HeroAction action,
             List<Monster> monsters
-    ) {
+    ) throws QuitBattleException {
 
         if (action == null) return;
 
         if (action instanceof QuitAction) {
-            throw new RuntimeException("Player quit game");
+            throw new QuitBattleException();
         }
 
         if (action instanceof SkipAction) {

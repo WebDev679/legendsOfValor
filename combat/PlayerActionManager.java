@@ -32,7 +32,7 @@ public class PlayerActionManager implements HeroActionManager {
 
             switch (input) {
                 case "q":
-                    return null;
+                    return new QuitAction();
                 case "1":
                     return chooseAttack(hero);
                 case "2":
