@@ -20,7 +20,7 @@ public class ValorBattle {
                 if (!hero.isAlive()) continue;
 
                 HeroAction action = actionManager.nextAction(hero);
-                resolveHeroAction(hero, action, monsters);
+                resolveHeroAction(action, monsters);
             }
 
             for (Monster monster : monsters) {
@@ -38,7 +38,6 @@ public class ValorBattle {
     }
 
     private void resolveHeroAction(
-            Hero hero,
             HeroAction action,
             List<Monster> monsters
     ) {
