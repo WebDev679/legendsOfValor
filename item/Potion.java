@@ -27,24 +27,24 @@ public class Potion extends Item {
     public void applyTo(Hero hero) {
         for (AttributeType attr : affectedAttributes) {
             switch (attr) {
-                case AttributeType.HEALTH:
+                case HEALTH:
                     hero.setMaxHp(hero.getMaxHp() + this.attributeIncrease);
                     hero.heal(attributeIncrease);
                     break;
-                case AttributeType.MANA:
+                case MANA:
                     hero.setMaxMp(hero.getMaxMp() + this.attributeIncrease);
-                    hero.setMp(attributeIncrease);
+                    hero.setMp(hero.getMp() + attributeIncrease);
                     if (hero.getMp() > hero.getMaxMp()) hero.setMp(hero.getMaxMp());
                     break;
-                case AttributeType.STRENGTH:
+                case STRENGTH:
                     hero.setStrength(hero.getStrength() + this.attributeIncrease);
                     break;
-                case AttributeType.DEXTERITY:
+                case DEXTERITY:
                     hero.setDexterity(hero.getDexterity() + this.attributeIncrease);
                     break;
-                case AttributeType.DEFENSE:
+                case DEFENSE:
                     break;
-                case AttributeType.AGILITY:
+                case AGILITY:
                     hero.setAgility(hero.getAgility() + this.attributeIncrease);
                     break;
             }
