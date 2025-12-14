@@ -28,24 +28,28 @@ public class BattleState implements GameState {
 
         } catch (RuntimeException e) {
             context.gameRunning = false;
-            stateManager.changeState(null);
+            stateManager.changeState(new GameOverState(context));
             return;
         }
 
         if (context.heroReachedEnemyNexus()) {
             System.out.println("Heroes win!");
             context.gameRunning = false;
-            stateManager.changeState(null);
+            stateManager.changeState(new GameOverState(context));
             return;
         }
 
         if (context.monsterReachedHeroNexus()) {
             System.out.println("Monsters win!");
             context.gameRunning = false;
-            stateManager.changeState(null);
+            stateManager.changeState(new GameOverState(context));
             return;
         }
 
+        if (context.hasAliveHeroes() && context.hasAliveMonsters()){
+            return;
+        }
+        context.monsters.clear();
         stateManager.changeState(
                 new ExplorationState(context, stateManager)
         );
