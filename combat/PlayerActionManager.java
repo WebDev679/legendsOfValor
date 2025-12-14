@@ -62,7 +62,7 @@ public class PlayerActionManager implements HeroActionManager {
         }
 
         for (int i = 0; i<potions.size(); i++) {
-            System.out.println((i+1) + ". " + potions.get(i).getName());
+            System.out.println((i) + ". " + potions.get(i).getName());
         }
         try{
             int choice = Integer.parseInt(scanner.nextLine().trim());
