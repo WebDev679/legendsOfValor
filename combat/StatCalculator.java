@@ -2,6 +2,11 @@ package combat;
 import character.Hero;
 import character.Monster;
 
+/**
+ * Utility class containing stat progression and combat related formulae. Cenralised
+ * locaiotn for levelling, regen and dodge logic to have consistent balance across
+ * characters
+ */
 public final class StatCalculator {
     private StatCalculator() {}
 
@@ -30,6 +35,6 @@ public final class StatCalculator {
     }
 
     public static double monsterDodgeChance(double base) {
-        return Math.IEEEremainder(0.0, base);
+        return Math.min(0.5, Math.max(0.0, base));
     }
 }
