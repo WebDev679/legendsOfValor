@@ -92,9 +92,15 @@ public abstract class Hero extends Character {
     public void regenAfterRound() {
         if (!isAlive()) return;
         hp = StatCalculator.regen10Percent(hp);
-        if (hp > maxHp) hp = maxHp;
+        if (hp > maxHp){
+            System.out.println("Hero " + this.getName() + " recovered health from " + hp + " --> " + maxHp);
+            hp = maxHp;
+        }
         mp = StatCalculator.regen10Percent(mp);
-        if (mp > maxMp) mp = maxMp;
+        if (mp > maxMp){
+            System.out.println("Hero " + this.getName() + " recovered mana from " + mp + " --> " + maxMp);
+            mp = maxMp;
+        }
     }
 
     public void reviveAfterBattle() {
