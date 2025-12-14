@@ -13,4 +13,15 @@ public class GameContext {
     public HeroActionManager actionManager;
 
     public boolean gameRunning = true;
+
+    public boolean monsterReachedHeroNexus() {
+        // returning false for now
+        // TODO: implement actual logic
+        return false;
+    }
+
+    public boolean heroReachedEnemyNexus() {
+        // TODO: implement logic later
+        return false;
+    }
 }
