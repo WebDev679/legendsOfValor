@@ -41,6 +41,12 @@ public class ValorBattle {
             HeroActionManager actionManager
     ) throws QuitBattleException {
 
+        for (Hero hero : heroes) {
+            if (!hero.isAlive()) {
+                respawnHero(hero);
+            }
+        }
+
         PrintUtils.pause(500);
 //        PrintUtils.clearScreen();
 //
@@ -64,6 +70,15 @@ public class ValorBattle {
         for (Hero hero : heroes) {
             hero.regenAfterRound();
         }
+    }
+
+    private void respawnHero(Hero hero) {
+        hero.reviveAfterBattle();
+        if (hero.getNextPosition() != null){
+            hero.setNextPosition(hero.getNextPosition());
+        }
+
+        System.out.println(hero.getName() + " has respawned at their Nexus");
     }
 
     /**
