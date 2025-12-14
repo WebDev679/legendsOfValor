@@ -16,9 +16,9 @@ public class ValorBattle {
     ) throws QuitBattleException {
 
         PrintUtils.pause(500);
-        PrintUtils.clearScreen();
-
-        System.out.println("\n========= ROUND =========");
+//        PrintUtils.clearScreen();
+//
+//        System.out.println("\n========= ROUND =========");
         printBattleState(heroes, monsters);
 
         for (Hero hero : heroes) {
