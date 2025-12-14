@@ -53,6 +53,17 @@ public class ValorBattle {
             ValorCombatExecutor.heroAttack(attacker, target);
             return;
         }
+
+        if (action instanceof SpellcastAction){
+            SpellcastAction spellcast = (SpellcastAction) action;
+            Hero caster = spellcast.getHero();
+            Monster target = spellcast.getTarget();
+
+            if (!target.isAlive()) return;
+            if (!ValorCombatRules.canAttack(caster, target)) return;
+
+            ValorCombatExecutor.heroCastSpell(caster, target, spellcast.getSpell());
+        }
     }
 
     private boolean hasAliveMonster(List<Monster> monsters) {
