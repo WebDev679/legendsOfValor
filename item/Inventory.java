@@ -37,6 +37,10 @@ public class Inventory {
         }
     }
 
+    public void removePotion(Potion p) {
+        potions.remove(p);
+    }
+
     public String describe() {
         StringBuilder sb = new StringBuilder();
         sb.append("Weapons:\n");
