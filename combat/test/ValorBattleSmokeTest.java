@@ -15,6 +15,13 @@ import java.util.Scanner;
 
 import static item.AttributeType.HEALTH;
 
+/**
+ * Smoke test for validating core battle loop.
+ *
+ * <p>This class is used for manual and automated testing of combat flow,
+ * hero actions, and monster AI behavior.
+ */
+
 public class ValorBattleSmokeTest {
 
     public static void main(String[] args) {
