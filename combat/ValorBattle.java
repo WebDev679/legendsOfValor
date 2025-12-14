@@ -7,9 +7,34 @@ import combat.action.*;
 import item.Potion;
 import util.PrintUtils;
 
+/**
+ * Manages the resolution of one combat round between heroes and monsters
+ * <p>A round consists of</p>
+ * <ol>
+ *     <li>Print current battle state</li>
+ *     <li>Heroes taking exactly one action each</li>
+ *     <li>Monsters execute ai driven turns</li>
+ *     <li>End of round regen for all living heroes</li>
+ * </ol>
+ *
+ * <p>This class doesn't manage game state transition or start/end conditions.
+ * It must be repeatedly involked by a higher level GameSate controller</p>
+ */
+
 public class ValorBattle {
+    /** Monster AI behaviour controller*/
     private final MonsterAI monsterAI = new MonsterAI();
 
+    /**
+     * Resolve one combat round
+     * <p>Each hero selects one action through {@link HeroActionManager}.
+     * Actions get immediately resolved. Post all heroes acting, each
+     * alive monster gets a turn</p>
+     * @param heroes heroes list participating in battle
+     * @param monsters list of monsters participating in battle
+     * @param actionManager provider for hero actions (can be player driven or automated)
+     * @throws QuitBattleException If quit action issued, then we throw this error
+     */
     public void resolveRound(
             List<Hero> heroes,
             List<Monster> monsters,
@@ -41,6 +66,15 @@ public class ValorBattle {
         }
     }
 
+    /**
+     * Resolves single hero action
+     * <p>Supports attack, spellcasting, potion use,
+     * turn skip and quitting battle.
+     * Null actions are ignored safely</p>
+     * @param action action to resolve
+     * @param monsters lisat of monsters in combat
+     * @throws QuitBattleException thrown if action a quit response is indicated
+     */
     private void resolveHeroAction(
             HeroAction action,
             List<Monster> monsters
@@ -98,6 +132,12 @@ public class ValorBattle {
         }
     }
 
+    /**
+     * Helper for printing current health and mana status of all heroes
+     * and monsters
+     * @param heroes list of heroes in battle
+     * @param monsters list of monsters in battle
+     */
     private void printBattleState(List<Hero> heroes, List<Monster> monsters) {
         System.out.println("\nHeroes:");
         for (Hero hero : heroes) {
