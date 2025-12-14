@@ -14,20 +14,41 @@ public class BattleState implements GameState {
 
     @Override
     public void enter() {
-        System.out.println("Entered battle!");
-        boolean won = battle.execute(context.heroes, context.monsters, context.actionManager);
-        if (!won){
-            context.gameRunning = false;
-            stateManager.changeState(null);
-            return;
-        }
-        context.monsters.clear();
-        stateManager.changeState(new ExplorationState(context, stateManager));
+        System.out.println("Entered battle phase");
     }
 
     @Override
     public void update() {
+        try {
+            battle.resolveRound(
+                    context.heroes,
+                    context.monsters,
+                    context.actionManager
+            );
 
+        } catch (RuntimeException e) {
+            context.gameRunning = false;
+            stateManager.changeState(null);
+            return;
+        }
+
+        if (context.heroReachedEnemyNexus()) {
+            System.out.println("Heroes win!");
+            context.gameRunning = false;
+            stateManager.changeState(null);
+            return;
+        }
+
+        if (context.monsterReachedHeroNexus()) {
+            System.out.println("Monsters win!");
+            context.gameRunning = false;
+            stateManager.changeState(null);
+            return;
+        }
+
+        stateManager.changeState(
+                new ExplorationState(context, stateManager)
+        );
     }
 
     @Override
