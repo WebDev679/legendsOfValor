@@ -3,8 +3,10 @@ package combat;
 import combat.action.*;
 import character.Hero;
 import character.Monster;
+import item.Potion;
 import item.Spell;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -24,7 +26,8 @@ public class PlayerActionManager implements HeroActionManager {
             System.out.println("\nAction for " + hero.getName());
             System.out.println("1. Attack");
             System.out.println("2. Cast Spell");
-            System.out.println("3. Skip");
+            System.out.println("3. Use Potion");
+            System.out.println("4. Skip");
             System.out.println("0. Quit");
             System.out.print("> ");
 
@@ -38,10 +41,35 @@ public class PlayerActionManager implements HeroActionManager {
                 case "2":
                     return chooseSpell(hero);
                 case "3":
+                    HeroAction action = choosePotion(hero);
+                    if (action != null) return action;
+                    break;
+                case "4":
                     return new SkipAction(hero);
                 default:
                     System.out.println("Invalid choice.");
             }
+        }
+    }
+
+    private HeroAction choosePotion(Hero hero) {
+        List <Potion> potions = new ArrayList<>();
+        potions = hero.getInventory().getPotions();
+
+        if (potions.isEmpty()) {
+            System.out.println("No potions found.");
+            return null;
+        }
+
+        for (int i = 0; i<potions.size(); i++) {
+            System.out.println((i+1) + ". " + potions.get(i).getName());
+        }
+        try{
+            int choice = Integer.parseInt(scanner.nextLine().trim());
+            return new PotionAction(hero, potions.get(choice));
+        } catch (Exception e){
+            System.out.println("Invalid choice.");
+            return null;
         }
     }
 

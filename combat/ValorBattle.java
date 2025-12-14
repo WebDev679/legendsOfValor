@@ -4,6 +4,7 @@ import character.Monster;
 import ai.MonsterAI;
 import java.util.List;
 import combat.action.*;
+import item.Potion;
 import util.PrintUtils;
 
 public class ValorBattle {
@@ -83,6 +84,17 @@ public class ValorBattle {
                     target,
                     spellcast.getSpell()
             );
+        }
+
+        if (action instanceof PotionAction){
+            PotionAction potionAction = (PotionAction) action;
+            Hero hero = potionAction.getHero();
+            Potion potion = potionAction.getPotion();
+            potion.applyTo(hero);
+            hero.getInventory().removePotion(potion);
+
+            System.out.println(hero.getName() + " used potion " + potion.getName());
+            return;
         }
     }
 
