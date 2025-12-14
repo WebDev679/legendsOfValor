@@ -10,5 +10,5 @@ package combat.action;
  *
  * <p>Using an explicit class rather than directly terminationg helps to separate concerns</p>
  */
-public class QuitAction implements HeroAction {
+public final class QuitAction implements HeroAction {
 }
