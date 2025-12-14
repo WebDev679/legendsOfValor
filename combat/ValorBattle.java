@@ -4,6 +4,7 @@ import character.Monster;
 import ai.MonsterAI;
 import java.util.List;
 import combat.action.*;
+import util.PrintUtils;
 
 public class ValorBattle {
     private final MonsterAI monsterAI = new MonsterAI();
@@ -16,6 +17,8 @@ public class ValorBattle {
         int round = 1;
         try{
             while (hasAliveHero(heroes) && hasAliveMonster(monsters)) {
+                PrintUtils.pause(1000);
+                PrintUtils.clearScreen();
                 System.out.println("\n========= ROUND " + round + " =========");
                 printBattleState(heroes, monsters);
 
