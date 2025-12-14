@@ -1,4 +1,4 @@
 package combat.action;
 
-public class QuitAction {
+public class QuitAction implements HeroAction {
 }
