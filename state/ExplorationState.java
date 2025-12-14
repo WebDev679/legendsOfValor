@@ -1,6 +1,7 @@
 package state;
 
 import character.Hero;
+import factory.MonsterFactory;
 import util.DataLoader;
 
 import java.util.Random;
@@ -30,7 +31,7 @@ public class ExplorationState implements GameState {
                 maxLevel = Math.max(maxLevel, hero.getLevel());
             }
 
-            context.monsters = DataLoader.generateRandomMonsters(heroesCount, maxLevel);
+            context.monsters = MonsterFactory.spawnWave(heroesCount, maxLevel);
             stateManager.changeState(new BattleState(context, stateManager));
 
         }
