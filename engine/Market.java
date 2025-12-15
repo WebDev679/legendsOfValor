@@ -5,26 +5,44 @@ import item.Potion;
 import item.Spell;
 import item.Weapon;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class Market {
 
-    private List<Weapon> weaponPrototypes;
-    private List<Armor> armorPrototypes;
-    private List<Potion> potionPrototypes;
-    private List<Spell> fireSpellPrototypes;
-    private List<Spell> iceSpellPrototypes;
-    private List<Spell> lightningSpellPrototypes;
+    private final List<Weapon> weaponPrototypes;
+    private final List<Armor> armorPrototypes;
+    private final List<Potion> potionPrototypes;
+    private final List<Spell> fireSpellPrototypes;
+    private final List<Spell> iceSpellPrototypes;
+    private final List<Spell> lightningSpellPrototypes;
+
+    /** Shared marketplace rules, reused by different game modes. */
+    private final MarketService marketService;
 
     public Market(List<Weapon> weapons, List<Armor> armors,
                   List<Potion> potions, List<Spell> fireSpells,
                   List<Spell> iceSpells, List<Spell> lightningSpells) {
-        this.weaponPrototypes = weapons;
-        this.armorPrototypes = armors;
-        this.potionPrototypes = potions;
-        this.fireSpellPrototypes = fireSpells;
-        this.iceSpellPrototypes = iceSpells;
-        this.lightningSpellPrototypes = lightningSpells;
+        this.weaponPrototypes = weapons != null ? weapons : new ArrayList<>();
+        this.armorPrototypes = armors != null ? armors : new ArrayList<>();
+        this.potionPrototypes = potions != null ? potions : new ArrayList<>();
+        this.fireSpellPrototypes = fireSpells != null ? fireSpells : new ArrayList<>();
+        this.iceSpellPrototypes = iceSpells != null ? iceSpells : new ArrayList<>();
+        this.lightningSpellPrototypes = lightningSpells != null ? lightningSpells : new ArrayList<>();
+
+        List<Spell> allSpells = new ArrayList<>();
+        allSpells.addAll(this.fireSpellPrototypes);
+        allSpells.addAll(this.iceSpellPrototypes);
+        allSpells.addAll(this.lightningSpellPrototypes);
+
+        this.marketService = new MarketService(
+                this.weaponPrototypes,
+                this.armorPrototypes,
+                this.potionPrototypes,
+                allSpells,
+                new ArrayList<>()
+        );
     }
 
     public void interact(Hero hero, Scanner scanner) {
@@ -125,17 +143,18 @@ public class Market {
         }
 
         Weapon proto = weaponPrototypes.get(idx);
-        if (hero.getLevel() < proto.getRequiredLevel()) {
-            System.out.println("Your level is too low for this weapon.");
-            return;
-        }
-        if (hero.getGold() < proto.getPrice()) {
-            System.out.println("You don't have enough gold.");
+        if (!marketService.canBuy(hero, proto)) {
+            if (hero.getLevel() < proto.getRequiredLevel()) {
+                System.out.println("Your level is too low for this weapon.");
+            } else if (hero.getGold() < proto.getPrice()) {
+                System.out.println("You don't have enough gold.");
+            } else {
+                System.out.println("You cannot buy this weapon right now.");
+            }
             return;
         }
 
-        hero.spendGold(proto.getPrice());
-        hero.getInventory().addWeapon(new Weapon(proto));
+        marketService.buy(hero, proto);
         System.out.println("You purchased " + proto.getName());
     }
 
@@ -169,17 +188,18 @@ public class Market {
         }
 
         Armor proto = armorPrototypes.get(idx);
-        if (hero.getLevel() < proto.getRequiredLevel()) {
-            System.out.println("Your level is too low for this armor.");
-            return;
-        }
-        if (hero.getGold() < proto.getPrice()) {
-            System.out.println("You don't have enough gold.");
+        if (!marketService.canBuy(hero, proto)) {
+            if (hero.getLevel() < proto.getRequiredLevel()) {
+                System.out.println("Your level is too low for this armor.");
+            } else if (hero.getGold() < proto.getPrice()) {
+                System.out.println("You don't have enough gold.");
+            } else {
+                System.out.println("You cannot buy this armor right now.");
+            }
             return;
         }
 
-        hero.spendGold(proto.getPrice());
-        hero.getInventory().addArmor(new Armor(proto));
+        marketService.buy(hero, proto);
         System.out.println("You purchased " + proto.getName());
     }
 
@@ -213,17 +233,18 @@ public class Market {
         }
 
         Potion proto = potionPrototypes.get(idx);
-        if (hero.getLevel() < proto.getRequiredLevel()) {
-            System.out.println("Your level is too low for this potion.");
-            return;
-        }
-        if (hero.getGold() < proto.getPrice()) {
-            System.out.println("You don't have enough gold.");
+        if (!marketService.canBuy(hero, proto)) {
+            if (hero.getLevel() < proto.getRequiredLevel()) {
+                System.out.println("Your level is too low for this potion.");
+            } else if (hero.getGold() < proto.getPrice()) {
+                System.out.println("You don't have enough gold.");
+            } else {
+                System.out.println("You cannot buy this potion right now.");
+            }
             return;
         }
 
-        hero.spendGold(proto.getPrice());
-        hero.getInventory().addPotion(new Potion(proto));
+        marketService.buy(hero, proto);
         System.out.println("You purchased " + proto.getName());
     }
 
@@ -263,17 +284,18 @@ public class Market {
         }
 
         Spell proto = allSpells.get(idx);
-        if (hero.getLevel() < proto.getRequiredLevel()) {
-            System.out.println("Your level is too low for this spell.");
-            return;
-        }
-        if (hero.getGold() < proto.getPrice()) {
-            System.out.println("You don't have enough gold.");
+        if (!marketService.canBuy(hero, proto)) {
+            if (hero.getLevel() < proto.getRequiredLevel()) {
+                System.out.println("Your level is too low for this spell.");
+            } else if (hero.getGold() < proto.getPrice()) {
+                System.out.println("You don't have enough gold.");
+            } else {
+                System.out.println("You cannot buy this spell right now.");
+            }
             return;
         }
 
-        hero.spendGold(proto.getPrice());
-        hero.getInventory().addSpell(new Spell(proto));
+        marketService.buy(hero, proto);
         System.out.println("You purchased " + proto.getName());
     }
 
@@ -340,9 +362,9 @@ public class Market {
             return;
         }
 
-        Weapon w = weapons.remove(idx);
+        Weapon w = weapons.get(idx);
         int salePrice = w.getPrice() / 2;
-        hero.addGold(salePrice);
+        marketService.sell(hero, w);
         System.out.println("Sold " + w.getName() + " for " + salePrice + " gold.");
     }
 
@@ -374,9 +396,9 @@ public class Market {
             return;
         }
 
-        Armor a = armors.remove(idx);
+        Armor a = armors.get(idx);
         int salePrice = a.getPrice() / 2;
-        hero.addGold(salePrice);
+        marketService.sell(hero, a);
         System.out.println("Sold " + a.getName() + " for " + salePrice + " gold.");
     }
 
@@ -408,9 +430,9 @@ public class Market {
             return;
         }
 
-        Potion p = potions.remove(idx);
+        Potion p = potions.get(idx);
         int salePrice = p.getPrice() / 2;
-        hero.addGold(salePrice);
+        marketService.sell(hero, p);
         System.out.println("Sold " + p.getName() + " for " + salePrice + " gold.");
     }
 
@@ -442,9 +464,9 @@ public class Market {
             return;
         }
 
-        Spell s = spells.remove(idx);
+        Spell s = spells.get(idx);
         int salePrice = s.getPrice() / 2;
-        hero.addGold(salePrice);
+        marketService.sell(hero, s);
         System.out.println("Sold " + s.getName() + " for " + salePrice + " gold.");
     }
 }
