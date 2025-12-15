@@ -24,6 +24,14 @@ public class Spell extends Item {
     public int getManaCost() { return manaCost; }
     public SpellType getType() { return type; }
 
+    @Override
+    public void addToInventory(Inventory inventory) {
+        if (inventory == null) {
+            return;
+        }
+        inventory.addSpell(new Spell(this));
+    }
+
     public void applyEffect(Monster target) {
         switch (type) {
             case FIRE:

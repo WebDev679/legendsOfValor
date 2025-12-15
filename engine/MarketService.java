@@ -2,6 +2,7 @@ package engine;
 
 import character.Hero;
 import item.Armor;
+import item.Artifact;
 import item.Item;
 import item.Potion;
 import item.Spell;
@@ -25,7 +26,7 @@ public class MarketService {
     private final List<Armor> armorPrototypes;
     private final List<Potion> potionPrototypes;
     private final List<Spell> spellPrototypes;
-    private final List<Item> artifactPrototypes;
+    private final List<Artifact> artifactPrototypes;
 
     /**
      * Creates a new {@code MarketService}.
@@ -41,7 +42,7 @@ public class MarketService {
             List<Armor> armors,
             List<Potion> potions,
             List<Spell> spells,
-            List<Item> artifacts
+            List<Artifact> artifacts
     ) {
         this.weaponPrototypes = weapons != null ? weapons : new ArrayList<>();
         this.armorPrototypes = armors != null ? armors : new ArrayList<>();
@@ -66,7 +67,7 @@ public class MarketService {
         return Collections.unmodifiableList(spellPrototypes);
     }
 
-    public List<Item> getArtifactPrototypes() {
+    public List<Artifact> getArtifactPrototypes() {
         return Collections.unmodifiableList(artifactPrototypes);
     }
 
@@ -93,22 +94,7 @@ public class MarketService {
         }
 
         hero.spendGold(item.getPrice());
-
-        if (item instanceof Weapon) {
-            hero.getInventory().addWeapon(new Weapon((Weapon) item));
-        } else if (item instanceof Armor) {
-            hero.getInventory().addArmor(new Armor((Armor) item));
-        } else if (item instanceof Potion) {
-            hero.getInventory().addPotion(new Potion((Potion) item));
-        } else if (item instanceof Spell) {
-            hero.getInventory().addSpell(new Spell((Spell) item));
-        } else {
-            // For custom artifact types we currently require callers to handle
-            // inventory storage explicitly. This keeps the core market logic
-            // simple and safe until a dedicated artifact inventory strategy is
-            // agreed upon.
-            throw new IllegalArgumentException("Unsupported item type for purchase: " + item.getClass().getSimpleName());
-        }
+        item.addToInventory(hero.getInventory());
     }
 
     /**

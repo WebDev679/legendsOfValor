@@ -24,6 +24,14 @@ public class Potion extends Item {
         return this.attributeIncrease;
     }
 
+    @Override
+    public void addToInventory(Inventory inventory) {
+        if (inventory == null) {
+            return;
+        }
+        inventory.addPotion(new Potion(this));
+    }
+
     public void applyTo(Hero hero) {
         for (AttributeType attr : affectedAttributes) {
             switch (attr) {

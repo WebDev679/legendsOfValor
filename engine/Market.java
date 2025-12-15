@@ -84,7 +84,8 @@ public class Market {
         System.out.println("2. Armors");
         System.out.println("3. Potions");
         System.out.println("4. Spells");
-        System.out.println("5. Back");
+        System.out.println("5. Artifacts");
+        System.out.println("6. Back");
         System.out.print("Choose: ");
         String input = scanner.nextLine().trim();
         if (input.equalsIgnoreCase("q")) {
@@ -107,6 +108,10 @@ public class Market {
                 buySpell(hero, scanner);
                 break;
             case "5":
+                // No artifacts wired up for legacy mode yet; stub for future use.
+                System.out.println("No artifacts available.");
+                break;
+            case "6":
                 return;
             default:
                 System.out.println("Invalid choice.");

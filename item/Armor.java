@@ -13,4 +13,12 @@ public class Armor extends Item {
     }
 
     public int getDamageReduction() { return damageReduction; }
+
+    @Override
+    public void addToInventory(Inventory inventory) {
+        if (inventory == null) {
+            return;
+        }
+        inventory.addArmor(new Armor(this));
+    }
 }

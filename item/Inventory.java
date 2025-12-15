@@ -9,6 +9,7 @@ public class Inventory {
     private final List<Armor> armors = new ArrayList<>();
     private final List<Potion> potions = new ArrayList<>();
     private final List<Spell> spells = new ArrayList<>();
+    private final List<Artifact> artifacts = new ArrayList<>();
 
     private Weapon equippedWeapon;
     private Armor equippedArmor;
@@ -17,6 +18,7 @@ public class Inventory {
     public List<Armor> getArmors() { return armors; }
     public List<Potion> getPotions() { return potions; }
     public List<Spell> getSpells() { return spells; }
+    public List<Artifact> getArtifacts() { return artifacts; }
 
     /**
      * Returns an unmodifiable view of all items of the requested category.
@@ -36,8 +38,8 @@ public class Inventory {
             case SPELL:
                 return Collections.unmodifiableList(spells);
             case ARTIFACT:
+                return Collections.unmodifiableList(artifacts);
             default:
-                // No dedicated storage yet for artifacts.
                 return Collections.emptyList();
         }
     }
@@ -51,6 +53,7 @@ public class Inventory {
     public void addArmor(Armor a) { armors.add(a); }
     public void addPotion(Potion p) { potions.add(p); }
     public void addSpell(Spell s) { spells.add(s); }
+    public void addArtifact(Artifact a) { artifacts.add(a); }
 
     public Weapon getEquippedWeapon() { return equippedWeapon; }
     public Armor getEquippedArmor() { return equippedArmor; }
@@ -90,6 +93,9 @@ public class Inventory {
         if (item instanceof Spell) {
             return spells.contains(item);
         }
+        if (item instanceof Artifact) {
+            return artifacts.contains(item);
+        }
         return false;
     }
 
@@ -115,6 +121,9 @@ public class Inventory {
         }
         if (item instanceof Spell) {
             return spells.remove(item);
+        }
+        if (item instanceof Artifact) {
+            return artifacts.remove(item);
         }
         return false;
     }
@@ -145,6 +154,12 @@ public class Inventory {
             Spell s = spells.get(i);
             sb.append(String.format("  [%d] %s (%s Dmg:%d, MP:%d, Lvl:%d)%n",
                     i, s.getName(), s.getType(), s.getDamage(), s.getManaCost(), s.getRequiredLevel()));
+        }
+        sb.append("Artifacts:\n");
+        for (int i = 0; i < artifacts.size(); i++) {
+            Artifact a = artifacts.get(i);
+            sb.append(String.format("  [%d] %s (Price:%d, Lvl:%d)%n",
+                    i, a.getName(), a.getPrice(), a.getRequiredLevel()));
         }
         return sb.toString();
     }

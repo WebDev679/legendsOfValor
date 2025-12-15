@@ -3,6 +3,7 @@ package state;
 import character.Hero;
 import engine.MarketService;
 import item.Armor;
+import item.Artifact;
 import item.Item;
 import item.Potion;
 import item.Spell;
@@ -85,7 +86,7 @@ public class MarketState implements GameState {
                 armors,
                 potions,
                 allSpells,
-                new ArrayList<Item>()   // no custom artifacts yet
+                new ArrayList<Artifact>()   // no custom artifacts yet
         );
     }
 
@@ -170,7 +171,8 @@ public class MarketState implements GameState {
         System.out.println("2. Armors");
         System.out.println("3. Potions");
         System.out.println("4. Spells");
-        System.out.println("5. Back");
+        System.out.println("5. Artifacts");
+        System.out.println("6. Back");
         System.out.print("Choose: ");
 
         String input = scanner.nextLine().trim();
@@ -188,6 +190,9 @@ public class MarketState implements GameState {
                 buySpell(hero);
                 break;
             case "5":
+                buyArtifact(hero);
+                break;
+            case "6":
                 return;
             default:
                 System.out.println("Invalid choice.");
@@ -378,6 +383,52 @@ public class MarketState implements GameState {
         System.out.println("You purchased " + proto.getName());
     }
 
+    private void buyArtifact(Hero hero) {
+        List<Artifact> artifacts = context.marketService.getArtifactPrototypes();
+        if (artifacts.isEmpty()) {
+            System.out.println("No artifacts available.");
+            return;
+        }
+        System.out.println("\nArtifacts for sale:");
+        for (int i = 0; i < artifacts.size(); i++) {
+            Artifact a = artifacts.get(i);
+            System.out.printf("[%d] %s (Price:%d, Lvl:%d)%n",
+                    i, a.getName(), a.getPrice(), a.getRequiredLevel());
+        }
+        System.out.println("[X] Cancel");
+        System.out.print("Choose artifact index: ");
+        String in = scanner.nextLine().trim();
+        if (in.equalsIgnoreCase("x")) return;
+
+        int idx;
+        try {
+            idx = Integer.parseInt(in);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input.");
+            return;
+        }
+
+        if (idx < 0 || idx >= artifacts.size()) {
+            System.out.println("Invalid index.");
+            return;
+        }
+
+        Artifact proto = artifacts.get(idx);
+        if (!context.marketService.canBuy(hero, proto)) {
+            if (hero.getLevel() < proto.getRequiredLevel()) {
+                System.out.println("Your level is too low for this artifact.");
+            } else if (hero.getGold() < proto.getPrice()) {
+                System.out.println("You don't have enough gold.");
+            } else {
+                System.out.println("You cannot buy this artifact right now.");
+            }
+            return;
+        }
+
+        context.marketService.buy(hero, proto);
+        System.out.println("You purchased " + proto.getName());
+    }
+
     // ===== SELL side =====
 
     private void sellMenu(Hero hero) {
@@ -386,7 +437,8 @@ public class MarketState implements GameState {
         System.out.println("2. Armors");
         System.out.println("3. Potions");
         System.out.println("4. Spells");
-        System.out.println("5. Back");
+        System.out.println("5. Artifacts");
+        System.out.println("6. Back");
         System.out.print("Choose: ");
         String input = scanner.nextLine().trim();
 
@@ -404,6 +456,9 @@ public class MarketState implements GameState {
                 sellSpells(hero);
                 break;
             case "5":
+                sellArtifacts(hero);
+                break;
+            case "6":
                 return;
             default:
                 System.out.println("Invalid choice.");
@@ -560,5 +615,43 @@ public class MarketState implements GameState {
 
         context.marketService.sell(hero, s);
         System.out.println("Sold " + s.getName() + " for " + (s.getPrice() / 2) + " gold.");
+    }
+
+    private void sellArtifacts(Hero hero) {
+        List<Artifact> artifacts = hero.getInventory().getArtifacts();
+        if (artifacts.isEmpty()) {
+            System.out.println("No artifacts to sell.");
+            return;
+        }
+        System.out.println("\nYour artifacts:");
+        for (int i = 0; i < artifacts.size(); i++) {
+            Artifact a = artifacts.get(i);
+            System.out.printf("[%d] %s (Price:%d)%n", i, a.getName(), a.getPrice());
+        }
+        System.out.println("[X] Cancel");
+        System.out.print("Choose artifact index: ");
+        String in = scanner.nextLine().trim();
+        if (in.equalsIgnoreCase("x")) return;
+
+        int idx;
+        try {
+            idx = Integer.parseInt(in);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input.");
+            return;
+        }
+        if (idx < 0 || idx >= artifacts.size()) {
+            System.out.println("Invalid index.");
+            return;
+        }
+
+        Artifact a = artifacts.get(idx);
+        if (!context.marketService.canSell(hero, a)) {
+            System.out.println("You cannot sell this artifact.");
+            return;
+        }
+
+        context.marketService.sell(hero, a);
+        System.out.println("Sold " + a.getName() + " for " + (a.getPrice() / 2) + " gold.");
     }
 }
