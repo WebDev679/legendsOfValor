@@ -50,7 +50,8 @@ public class PlayerActionManager implements HeroActionManager {
             System.out.println("1. Attack");
             System.out.println("2. Cast Spell");
             System.out.println("3. Use Potion");
-            System.out.println("4. Skip");
+            System.out.println("4. Change Equipment");
+            System.out.println("5. Skip");
             System.out.println("0. Quit");
             System.out.print("> ");
 
@@ -68,6 +69,10 @@ public class PlayerActionManager implements HeroActionManager {
                     if (action != null) return action;
                     break;
                 case "4":
+                    HeroAction equipAction = chooseEquipment(hero);
+                    if (equipAction != null) return equipAction;
+                    break;
+                case "5":
                     return new SkipAction(hero);
                 default:
                     System.out.println("Invalid choice.");
@@ -170,6 +175,80 @@ public class PlayerActionManager implements HeroActionManager {
         } catch (Exception e) {
             System.out.println("Invalid selection.");
             return new SkipAction(hero);
+        }
+    }
+
+    /**
+     * Prompt player to change equipped weapon or armor for the given hero.
+     *
+     * <p>Returns an {@link EquipAction} when a valid selection is made,
+     * or {@code null} if the player cancels or input is invalid, in which
+     * case the main action menu will be shown again.</p>
+     */
+    private HeroAction chooseEquipment(Hero hero) {
+        System.out.println("\n== Change Equipment for " + hero.getName() + " ==");
+        System.out.println("1. Equip weapon");
+        System.out.println("2. Equip armor");
+        System.out.println("3. Back");
+        System.out.print("> ");
+
+        String choice = scanner.nextLine().trim();
+        switch (choice) {
+            case "1":
+                List<Weapon> weapons = hero.getInventory().getWeapons();
+                if (weapons.isEmpty()) {
+                    System.out.println("No weapons available.");
+                    return null;
+                }
+                for (int i = 0; i < weapons.size(); i++) {
+                    Weapon w = weapons.get(i);
+                    System.out.printf(
+                            "%d: %s (Dmg:%d, Hands:%d)%n",
+                            i, w.getName(), w.getDamage(), w.getHandsRequired()
+                    );
+                }
+                System.out.print("Choose weapon index: ");
+                try {
+                    int idx = Integer.parseInt(scanner.nextLine().trim());
+                    if (idx < 0 || idx >= weapons.size()) {
+                        System.out.println("Invalid index.");
+                        return null;
+                    }
+                    return new EquipAction(hero, EquipAction.Slot.WEAPON, idx);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                    return null;
+                }
+            case "2":
+                List<Armor> armors = hero.getInventory().getArmors();
+                if (armors.isEmpty()) {
+                    System.out.println("No armors available.");
+                    return null;
+                }
+                for (int i = 0; i < armors.size(); i++) {
+                    Armor a = armors.get(i);
+                    System.out.printf(
+                            "%d: %s (Red:%d)%n",
+                            i, a.getName(), a.getDamageReduction()
+                    );
+                }
+                System.out.print("Choose armor index: ");
+                try {
+                    int idx = Integer.parseInt(scanner.nextLine().trim());
+                    if (idx < 0 || idx >= armors.size()) {
+                        System.out.println("Invalid index.");
+                        return null;
+                    }
+                    return new EquipAction(hero, EquipAction.Slot.ARMOR, idx);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                    return null;
+                }
+            case "3":
+                return null;
+            default:
+                System.out.println("Invalid choice.");
+                return null;
         }
     }
 }

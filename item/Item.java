@@ -14,4 +14,13 @@ public abstract class Item {
     public String getName() { return name; }
     public int getPrice() { return price; }
     public int getRequiredLevel() { return requiredLevel; }
+
+    /**
+     * Adds a copy of this item to the given inventory.
+     *
+     * <p>This method is used by marketplace logic to avoid large instanceof
+     * chains when buying items. Each concrete item type is responsible for
+     * deciding how it should be represented in the hero's inventory.</p>
+     */
+    public abstract void addToInventory(Inventory inventory);
 }
