@@ -133,6 +133,7 @@ public class ValorBattle {
                     target,
                     spellcast.getSpell()
             );
+            return;
         }
 
         if (action instanceof PotionAction){
@@ -143,6 +144,26 @@ public class ValorBattle {
             hero.getInventory().removePotion(potion);
 
             System.out.println(hero.getName() + " used potion " + potion.getName());
+            return;
+        }
+
+        if (action instanceof EquipAction) {
+            EquipAction equipAction = (EquipAction) action;
+            Hero hero = equipAction.getHero();
+            switch (equipAction.getSlot()) {
+                case WEAPON:
+                    hero.getInventory().equipWeapon(equipAction.getItemIndex());
+                    System.out.println(
+                            hero.getName() + " equipped weapon index " + equipAction.getItemIndex()
+                    );
+                    break;
+                case ARMOR:
+                    hero.getInventory().equipArmor(equipAction.getItemIndex());
+                    System.out.println(
+                            hero.getName() + " equipped armor index " + equipAction.getItemIndex()
+                    );
+                    break;
+            }
             return;
         }
     }
