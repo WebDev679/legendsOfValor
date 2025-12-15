@@ -8,20 +8,20 @@ Student ID: U20869212
 ## Files
 ---------------------------------------------------------------------------
 Java Source Files
-LegendsGame.java: Entry point (main) and GameEngine, manages game setup, main loop, and high-level input handling (movement, market access, inventory, quit).
-GameMap.java: Generates and maintains the square world map with Tile types (Common, Market, Inaccessible) and the hero’s position.
-Character.java: Abstract Character plus Hero and Monster hierarchies. Defines Warrior, Paladin, Sorcerer, Dragon, Exoskeleton, Spirit, and the Party class.
-Item.java: Abstract Item plus concrete Weapon, Armor, Potion, Spell, AttributeType, SpellType, and Inventory management (equipping, listing, and storing items).
-Market.java: Implements the Market logic for buying/selling weapons, armors, potions, and spells with level and gold checks per hero.
-Battle.java: Orchestrates turn-based combat between a Party of heroes and a list of monsters, including attacks, spells, potions, equipment changes, regen, victory/defeat handling, and rewards.
-DataLoader.java: Loads all hero, monster, item, and spell prototypes from the provided .txt configuration files and generates balanced random monster parties for battles.
+LegendsGame.java: Entry point (main) and engine.GameEngine, manages game setup, main loop, and high-level input handling (movement, market access, inventory, quit).
+world.GameMap.java: Generates and maintains the square world map with world.Tile types (Common, engine.Market, Inaccessible) and the hero’s position.
+character.Character.java: Abstract character.Character plus character.Hero and character.Monster hierarchies. Defines character.Warrior, character.Paladin, character.Sorcerer, character.Dragon, character.Exoskeleton, character.Spirit, and the character.Party class.
+item.Item.java: Abstract item.Item plus concrete item.Weapon, item.Armor, item.Potion, item.Spell, item.AttributeType, item.SpellType, and item.Inventory management (equipping, listing, and storing items).
+engine.Market.java: Implements the engine.Market logic for buying/selling weapons, armors, potions, and spells with level and gold checks per hero.
+combat.Battle.java: Orchestrates turn-based combat between a character.Party of heroes and a list of monsters, including attacks, spells, potions, equipment changes, regen, victory/defeat handling, and rewards.
+util.DataLoader.java: Loads all hero, monster, item, and spell prototypes from the provided .txt configuration files and generates balanced random monster parties for battles.
 
 ## Notes
 ---------------------------------------------------------------------------
 - Clean separation of concerns across map, game engine, characters, items, markets, and battles.
-- Heroes and monsters share base Character behavior while subclasses specialize stats and progression.
+- Heroes and monsters share base character.Character behavior while subclasses specialize stats and progression.
 - New hero/monster types or items can be added by extending the existing class hierarchies and/or adding new data files.
-- The GameMap, Market, and Battle classes are decoupled so alternative UIs or features (e.g., different maps, GUIs) can be added with minimal changes.
+- The world.GameMap, engine.Market, and combat.Battle classes are decoupled so alternative UIs or features (e.g., different maps, GUIs) can be added with minimal changes.
 
 ## How to compile and run
 ---------------------------------------------------------------------------
@@ -45,31 +45,31 @@ Create your party (1 - 3 heroes).
 How many heroes in your party (1-3)? 1
 
 Choose hero #1
-[0] Gaerdal_Ironhand     (Warrior) Lvl:1 HP:100 MP:100 STR:700 DEX:600 AGI:500 GOLD:1354 EXP:7
-[1] Sehanine_Monnbow     (Warrior) Lvl:1 HP:100 MP:600 STR:700 DEX:500 AGI:800 GOLD:2500 EXP:8
-[2] Muamman_Duathall     (Warrior) Lvl:1 HP:100 MP:300 STR:900 DEX:750 AGI:500 GOLD:2546 EXP:6
-[3] Flandal_Steelskin    (Warrior) Lvl:1 HP:100 MP:200 STR:750 DEX:700 AGI:650 GOLD:2500 EXP:7
-[4] Undefeated_Yoj       (Warrior) Lvl:1 HP:100 MP:400 STR:800 DEX:700 AGI:400 GOLD:2500 EXP:7
-[5] Eunoia_Cyn           (Warrior) Lvl:1 HP:100 MP:400 STR:700 DEX:600 AGI:800 GOLD:2500 EXP:6
-[6] Parzival             (Paladin) Lvl:1 HP:100 MP:300 STR:750 DEX:700 AGI:650 GOLD:2500 EXP:7
-[7] Sehanine_Moonbow     (Paladin) Lvl:1 HP:100 MP:300 STR:750 DEX:700 AGI:700 GOLD:2500 EXP:7
-[8] Skoraeus_Stonebones  (Paladin) Lvl:1 HP:100 MP:250 STR:650 DEX:350 AGI:600 GOLD:2500 EXP:4
-[9] Garl_Glittergold     (Paladin) Lvl:1 HP:100 MP:100 STR:600 DEX:400 AGI:500 GOLD:2500 EXP:5
-[10] Amaryllis_Astra      (Paladin) Lvl:1 HP:100 MP:500 STR:500 DEX:500 AGI:500 GOLD:2500 EXP:5
-[11] Caliber_Heist        (Paladin) Lvl:1 HP:100 MP:400 STR:400 DEX:400 AGI:400 GOLD:2500 EXP:8
-[12] Rillifane_Rallathil  (Sorcerer) Lvl:1 HP:100 MP:1300 STR:750 DEX:500 AGI:450 GOLD:2500 EXP:9
-[13] Segojan_Earthcaller  (Sorcerer) Lvl:1 HP:100 MP:900 STR:800 DEX:650 AGI:500 GOLD:2500 EXP:5
-[14] Reign_Havoc          (Sorcerer) Lvl:1 HP:100 MP:800 STR:800 DEX:800 AGI:800 GOLD:2500 EXP:8
-[15] Reverie_Ashels       (Sorcerer) Lvl:1 HP:100 MP:900 STR:800 DEX:400 AGI:700 GOLD:2500 EXP:7
-[16] Kalabar              (Sorcerer) Lvl:1 HP:100 MP:800 STR:850 DEX:600 AGI:400 GOLD:2500 EXP:6
-[17] Skye_Soar            (Sorcerer) Lvl:1 HP:100 MP:1000 STR:700 DEX:500 AGI:400 GOLD:2500 EXP:5
+[0] Gaerdal_Ironhand     (character.Warrior) Lvl:1 HP:100 MP:100 STR:700 DEX:600 AGI:500 GOLD:1354 EXP:7
+[1] Sehanine_Monnbow     (character.Warrior) Lvl:1 HP:100 MP:600 STR:700 DEX:500 AGI:800 GOLD:2500 EXP:8
+[2] Muamman_Duathall     (character.Warrior) Lvl:1 HP:100 MP:300 STR:900 DEX:750 AGI:500 GOLD:2546 EXP:6
+[3] Flandal_Steelskin    (character.Warrior) Lvl:1 HP:100 MP:200 STR:750 DEX:700 AGI:650 GOLD:2500 EXP:7
+[4] Undefeated_Yoj       (character.Warrior) Lvl:1 HP:100 MP:400 STR:800 DEX:700 AGI:400 GOLD:2500 EXP:7
+[5] Eunoia_Cyn           (character.Warrior) Lvl:1 HP:100 MP:400 STR:700 DEX:600 AGI:800 GOLD:2500 EXP:6
+[6] Parzival             (character.Paladin) Lvl:1 HP:100 MP:300 STR:750 DEX:700 AGI:650 GOLD:2500 EXP:7
+[7] Sehanine_Moonbow     (character.Paladin) Lvl:1 HP:100 MP:300 STR:750 DEX:700 AGI:700 GOLD:2500 EXP:7
+[8] Skoraeus_Stonebones  (character.Paladin) Lvl:1 HP:100 MP:250 STR:650 DEX:350 AGI:600 GOLD:2500 EXP:4
+[9] Garl_Glittergold     (character.Paladin) Lvl:1 HP:100 MP:100 STR:600 DEX:400 AGI:500 GOLD:2500 EXP:5
+[10] Amaryllis_Astra      (character.Paladin) Lvl:1 HP:100 MP:500 STR:500 DEX:500 AGI:500 GOLD:2500 EXP:5
+[11] Caliber_Heist        (character.Paladin) Lvl:1 HP:100 MP:400 STR:400 DEX:400 AGI:400 GOLD:2500 EXP:8
+[12] Rillifane_Rallathil  (character.Sorcerer) Lvl:1 HP:100 MP:1300 STR:750 DEX:500 AGI:450 GOLD:2500 EXP:9
+[13] Segojan_Earthcaller  (character.Sorcerer) Lvl:1 HP:100 MP:900 STR:800 DEX:650 AGI:500 GOLD:2500 EXP:5
+[14] Reign_Havoc          (character.Sorcerer) Lvl:1 HP:100 MP:800 STR:800 DEX:800 AGI:800 GOLD:2500 EXP:8
+[15] Reverie_Ashels       (character.Sorcerer) Lvl:1 HP:100 MP:900 STR:800 DEX:400 AGI:700 GOLD:2500 EXP:7
+[16] Kalabar              (character.Sorcerer) Lvl:1 HP:100 MP:800 STR:850 DEX:600 AGI:400 GOLD:2500 EXP:6
+[17] Skye_Soar            (character.Sorcerer) Lvl:1 HP:100 MP:1000 STR:700 DEX:500 AGI:400 GOLD:2500 EXP:5
 Enter index of hero: 14
 Added Reign_Havoc to your party.
 
 === Instructions ===
 Move with W (up), A (left), S (down), D (right).
 Common tiles may trigger battles.
-Market tiles let you buy/sell items (press M).
+engine.Market tiles let you buy/sell items (press M).
 I: Show hero information
 E: Change equipment (outside battle)
 P: Use a potion (outside battle)
@@ -87,8 +87,8 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): W
 You can't move outside the map!
@@ -103,8 +103,8 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): D
 
@@ -118,8 +118,8 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): M
 You are not standing on a market tile.
@@ -134,11 +134,11 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): D
-You entered a Market tile! Press M to trade.
+You entered a engine.Market tile! Press M to trade.
 
 === World Map ===
 C  C  H  C  M  X  X  C
@@ -150,8 +150,8 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2500
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): M
 
@@ -162,11 +162,11 @@ Choose hero to trade for:
 [X] Exit market
 0
 
-=== Market ===
-Hero: Reign_Havoc (Gold: 2500, Level: 1)
+=== engine.Market ===
+character.Hero: Reign_Havoc (Gold: 2500, Level: 1)
 1. Buy
 2. Sell
-3. Exit Market
+3. Exit engine.Market
 Choose: 1
 
 Buy Menu:
@@ -187,11 +187,11 @@ Armors for sale:
 Choose armor index: 0
 You purchased Platinum_Shield
 
-=== Market ===
-Hero: Reign_Havoc (Gold: 2350, Level: 1)
+=== engine.Market ===
+character.Hero: Reign_Havoc (Gold: 2350, Level: 1)
 1. Buy
 2. Sell
-3. Exit Market
+3. Exit engine.Market
 Choose: 3
 
 Choose hero to trade for:
@@ -210,8 +210,8 @@ C  M  C  X  X  C  M  C
 M  X  X  M  C  M  C  X
 X  C  C  C  C  C  M  M
 
-Party status:
-Reign_Havoc (Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2350
+character.Party status:
+Reign_Havoc (character.Sorcerer) L:1 HP:100/100 MP:800/800 Gold:2350
 
 Command (W/A/S/D move, M market, I info, E equip, P potion, H help, Q quit): Q
 Quitting game...
