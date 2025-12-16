@@ -1,7 +1,13 @@
 package state;
 
+import character.Hero;
+import factory.MonsterFactory;
+import util.DataLoader;
+
+import java.util.Random;
 import world.lov.*;
 import java.util.Scanner;
+
 
 public class ExplorationState implements GameState {
 
@@ -100,6 +106,9 @@ public class ExplorationState implements GameState {
 
             WorldEvent monsterEvent = board.moveMonstersAI();
             handleWorldEvent(monsterEvent);
+//            context.monsters = MonsterFactory.spawnWave(heroesCount, maxLevel);
+//            stateManager.changeState(new BattleState(context, stateManager));
+
             return;
         }
 

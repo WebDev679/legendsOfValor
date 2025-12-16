@@ -203,7 +203,7 @@ public class GameEngine {
         System.out.print("Choose hero: ");
         String in = scanner.nextLine().trim();
         if (in.equalsIgnoreCase("x")) return;
-    
+
         int idx;
         try {
             idx = Integer.parseInt(in);
@@ -215,7 +215,7 @@ public class GameEngine {
             System.out.println("Invalid hero index.");
             return;
         }
-    
+
         Hero hero = heroes.get(idx);
         Inventory inv = hero.getInventory();
         System.out.println("Change equipment for " + hero.getName());
@@ -224,7 +224,7 @@ public class GameEngine {
         System.out.println("3. Back");
         System.out.print("Choose: ");
         String choice = scanner.nextLine().trim();
-    
+
         switch (choice) {
             case "1":
                 List<Weapon> weapons = inv.getWeapons();
@@ -252,7 +252,7 @@ public class GameEngine {
                     System.out.println("Invalid input.");
                 }
                 break;
-    
+
             case "2":
                 List<Armor> armors = inv.getArmors();
                 if (armors.isEmpty()) {
@@ -279,7 +279,7 @@ public class GameEngine {
                     System.out.println("Invalid input.");
                 }
                 break;
-    
+
             case "3":
                 return;
             default:

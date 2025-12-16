@@ -16,4 +16,12 @@ public class Weapon extends Item {
 
     public int getDamage() { return damage; }
     public int getHandsRequired() { return handsRequired; }
+
+    @Override
+    public void addToInventory(Inventory inventory) {
+        if (inventory == null) {
+            return;
+        }
+        inventory.addWeapon(new Weapon(this));
+    }
 }

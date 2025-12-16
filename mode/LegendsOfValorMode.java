@@ -5,11 +5,17 @@ import state.*;
 import world.lov.LoVBoard;
 
 import java.util.List;
+import engine.GameEngine;
+import state.ExplorationState;
+import state.GameContext;
+import state.StateManager;
 
 public class LegendsOfValorMode implements GameMode {
 
     @Override
     public void start() {
+        GameContext gameContext = new GameContext();
+        StateManager stateManager = new StateManager();
 
         GameContext context = new GameContext();
 

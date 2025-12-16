@@ -1,4 +1,5 @@
-package world.mh;// world.GameMap.java
+package world.mh;
+
 import java.util.Random;
 
 public class GameMap {

@@ -31,7 +31,6 @@ public class SpellTest {
         assert monster.getHp() == hpBefore: "Damage calculation must not mutate monster HP";
         assert hero.getMp() == mpBefore: "Damage calculation must not mutate hero MP";
 
-        System.out.println("SpellDamageTest passed");
     }
 
     public static void testFireSpellEffect(){

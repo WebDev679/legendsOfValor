@@ -23,10 +23,10 @@ public class BattleState implements GameState {
         this.board = board;
     }
 
+
     @Override
     public void enter() {
-        System.out.println("Entered Battle State");
-
+        System.out.println("Entered battle phase");
         previousActionManager = context.actionManager;
         context.actionManager =
                 new PlayerActionManager(new Scanner(System.in), context.monsters);
@@ -40,10 +40,15 @@ public class BattleState implements GameState {
                     context.monsters,
                     context.actionManager
             );
-        } catch (QuitBattleException e) {
+            context.round++;
+
+        } catch (RuntimeException e) {
             context.gameRunning = false;
             stateManager.changeState(new GameOverState(context));
             return;
+        } catch (QuitBattleException e) {
+            context.gameRunning = false;
+            stateManager.changeState(new GameOverState(context));
         }
 
         // ================= POST-BATTLE CHECK =================
@@ -59,13 +64,27 @@ public class BattleState implements GameState {
             stateManager.changeState(
                     new ExplorationState(context, stateManager, board)
             );
-            return;
-        }
+            if (context.heroReachedEnemyNexus()) {
+                System.out.println("Heroes win!");
+                context.gameRunning = false;
+                stateManager.changeState(new GameOverState(context));
+                return;
+            }
 
-        // If heroes are defeated
-        if (!context.hasAliveHeroes()) {
-            context.gameRunning = false;
-            stateManager.changeState(new GameOverState(context));
+            if (context.monsterReachedHeroNexus()) {
+                System.out.println("Monsters win!");
+                context.gameRunning = false;
+                stateManager.changeState(new GameOverState(context));
+                return;
+            }
+
+            if (context.hasAliveHeroes() && context.hasAliveMonsters()) {
+                return;
+            }
+            context.monsters.clear();
+            stateManager.changeState(
+                    new ExplorationState(context, stateManager, board)
+            );
         }
     }
 
