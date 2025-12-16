@@ -454,11 +454,9 @@ public class LoVBoard {
             int lane = laneOfCol(ms.col);
             boolean forwardBlocked = heroDirectlyAhead(ms.row, ms.col) || isObstacleAhead(ms.row, ms.col);
 
-            System.out.println("FOrward blocked: " + forwardBlocked);
             MonsterMove move = ai.decideMove(
                     ms.monster, ms.row, ms.col, lane, forwardBlocked
             );
-            System.out.println("Move row " + move.newRow + " col: " + move.newColumn);
 
             if (move == null) continue;
 
@@ -466,31 +464,21 @@ public class LoVBoard {
             int nc = move.newColumn;
 
             if (!valid(nr, nc)){
-                System.out.println("move invalid");
                 continue;
             }
             if (!grid[nr][nc].isAccessible()) {
-                System.out.println("move inaccessible");
-                System.out.println(
-                        "Tile at (" + nr + "," + nc + ") = " +
-                                grid[nr][nc].getClass().getSimpleName()
-                );
                 continue;
             }
             if (laneOfCol(nc) != lane){
-                System.out.println("lane mismatch");
                 continue;
             }
             if (heroOccupies(nr, nc)){
-                System.out.println("hero occupying lane");
                 continue;
             };
             if (monsterOccupies(nr, nc, ms)){
-                System.out.println("monster occupying lane");
                 continue;
             }
             if (nr > ms.row && forwardBlocked){
-                System.out.println("monster forward blocked");
                 continue;
             }
 
