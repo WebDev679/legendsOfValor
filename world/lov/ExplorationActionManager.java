@@ -16,7 +16,7 @@ public class ExplorationActionManager {
     }
 
     public ExplorationAction nextAction(LoVBoard board, int heroIndex){
-        for (Hero _ : board.getHeroes()){
+        for (Hero hero : board.getHeroes()){
             while (true) {
                 System.out.println("Action: W (up), S (down), A (left), D (right), T (teleport), R (recall), Q (quit)");
                 String actionInput = scanner.nextLine().trim().toLowerCase();
