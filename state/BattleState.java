@@ -1,11 +1,14 @@
 package state;
 
+import character.Hero;
+import character.Monster;
 import combat.HeroActionManager;
 import combat.PlayerActionManager;
 import combat.QuitBattleException;
 import combat.ValorBattle;
 import world.lov.LoVBoard;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class BattleState implements GameState {
@@ -16,28 +19,33 @@ public class BattleState implements GameState {
 
     private final ValorBattle battle = new ValorBattle();
     private HeroActionManager previousActionManager;
+    private final List<Hero> heroes;
+    private final List<Monster> monsters;
 
-    public BattleState(GameContext context, StateManager stateManager, LoVBoard board) {
+    public BattleState(GameContext context, StateManager stateManager, LoVBoard board,  List<Hero> heroes, List<Monster> monsters) {
         this.context = context;
         this.stateManager = stateManager;
         this.board = board;
+        this.heroes = heroes;
+        this.monsters = monsters;
     }
 
 
     @Override
     public void enter() {
         System.out.println("Entered battle phase");
+        board.render();
         previousActionManager = context.actionManager;
         context.actionManager =
-                new PlayerActionManager(new Scanner(System.in), context.monsters);
+                new PlayerActionManager(new Scanner(System.in), this.monsters);
     }
 
     @Override
     public void update() {
         try {
             battle.resolveRound(
-                    context.heroes,
-                    context.monsters,
+                    heroes,
+                    monsters,
                     context.actionManager
             );
             context.round++;
@@ -56,7 +64,7 @@ public class BattleState implements GameState {
         // If monster is defeated, remove it from board
         if (!context.hasAliveMonsters()) {
 
-            board.removeMonsterAtLastCollision();
+//            board.removeMonsterAtLastCollision();
 
             context.monsters.clear();
 
