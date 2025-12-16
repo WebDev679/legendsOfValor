@@ -63,7 +63,11 @@ public class ValorBattle {
         System.out.println("\n======== Monsters' Turn ========");
         for (Monster monster : monsters) {
             if (!monster.isAlive()) continue;
-            monsterAI.takeTurn(monster, heroes);
+            boolean attacked = monsterAI.tryAttack(monster, heroes);
+
+            if (!attacked) {
+                System.out.println(monster.getName() + " could not attack");
+            }
         }
 
         System.out.println("\n======== End of Round Regen ========");
