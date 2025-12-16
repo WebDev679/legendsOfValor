@@ -283,7 +283,7 @@ public class LoVBoard {
             }
         }
     }
-    
+
 
 
 
@@ -351,12 +351,22 @@ public class LoVBoard {
         int maxHeroLevel = heroes.stream().mapToInt(Hero::getLevel).max().orElse(1);
 
         for (int lane = 0; lane < Math.min(heroes.size(), 3); lane++) {
+            if (laneHasAliveMonster(lane)) continue;
+
             Monster m = MonsterFactory.spawnSingle(maxHeroLevel);
             int col = colsInLane(lane)[rand.nextInt(2)];
             monsters.add(new MonsterSlot(m, 0, col));
-        }
-    }
+        }    }
 
+    private boolean laneHasAliveMonster(int lane) {
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (laneOfCol(ms.col) == lane) {
+                return true;
+            }
+        }
+        return false;
+    }
     /* ================= MOVEMENT HELPERS ================= */
 
     private boolean valid(int r, int c) {
@@ -473,7 +483,7 @@ public class LoVBoard {
         heroes.get(i).setPosition(new Position(nr, nc));
 
 //        if (nr == 0) return WorldEvent.HERO_WIN;
-        if(isHeroOnHeroNexus(heroes.get(i))){
+        if(isHeroOnMonsterNexus(heroes.get(i))){
             return WorldEvent.HERO_WIN;
         }
         if (heroMonsterAdjacent(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
