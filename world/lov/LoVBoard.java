@@ -386,21 +386,6 @@ public class LoVBoard {
         return false;
     }
 
-    private boolean heroMonsterAdjacentOld(int monsterRow, int monsterCol) {
-        int lane = laneOfCol(monsterCol);
-
-        for (int i = 0; i < heroes.size(); i++) {
-            if (!heroes.get(i).isAlive()) continue;
-            if (laneOfCol(heroCol[i]) != lane) continue;
-
-            if (Math.abs(heroRow[i] - monsterRow) == 1) {
-                lastCollisionLane = lane;
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean laneCollisionAt(int r, int c) {
         int lane = laneOfCol(c);
         for (MonsterSlot ms : monsters) {
@@ -434,12 +419,28 @@ public class LoVBoard {
         heroRow[i] = nr;
         heroCol[i] = nc;
         grid[nr][nc].onEnter(heroes.get(i));
+        heroes.get(i).setPosition(new Position(nr, nc));
 
         if (nr == 0) return WorldEvent.HERO_WIN;
         if (heroMonsterAdjacent(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
 //        if (laneCollisionAt(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
 
         return WorldEvent.NONE;
+    }
+
+    private boolean monsterAdjacentToAnyHero(int monsterRow, int monsterCol) {
+        int lane = laneOfCol(monsterCol);
+
+        for (int i = 0; i < heroes.size(); i++) {
+            if (!heroes.get(i).isAlive()) continue;
+            if (laneOfCol(heroCol[i]) != lane) continue;
+
+            if (Math.abs(heroRow[i] - monsterRow) == 1) {
+                lastCollisionLane = lane;
+                return true;
+            }
+        }
+        return false;
     }
 
     /* ================= MONSTER MOVEMENT ================= */
@@ -496,8 +497,10 @@ public class LoVBoard {
             ms.row = nr;
             ms.col = nc;
 
-//            if (laneCollisionAt(nr, nc)){
-            if (heroMonsterAdjacent(nr, nc)){
+            ms.monster.setPosition(new Position(nr, nc));
+
+
+            if (monsterAdjacentToAnyHero(nr, nc)) {
                 return WorldEvent.BATTLE_TRIGGERED;
             }
 
