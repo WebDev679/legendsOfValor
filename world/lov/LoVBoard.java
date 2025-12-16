@@ -188,6 +188,11 @@ public class LoVBoard {
             int[] cols = colsInLane(lane);
             laneSpine[lane] = cols[rand.nextInt(2)];
         }
+        // Choose exactly ONE obstacle row per lane (not nexus rows)
+        int[] obstacleRowForLane = new int[3];
+        for (int lane = 0; lane < 3; lane++) {
+            obstacleRowForLane[lane] = 1 + rand.nextInt(SIZE - 2);
+        }
 
         for (int r = 0; r < SIZE; r++) {
             // Hard walls stay hard walls.
@@ -217,8 +222,13 @@ public class LoVBoard {
 
 
                 // Optionally block only the other column. Never block both.
-                boolean blockOther = rand.nextBoolean(); // tune probability if you want
-                grid[r][otherCol] = blockOther ? new ObstacleTile() : LoVTileFactory.createPlayableTile();
+                //boolean blockOther = rand.nextBoolean(); // tune probability if you want
+                //grid[r][otherCol] = blockOther ? new ObstacleTile() : LoVTileFactory.createPlayableTile();
+                if (r == obstacleRowForLane[lane]) {
+                    grid[r][otherCol] = new ObstacleTile();
+                } else {
+                    grid[r][otherCol] = LoVTileFactory.createNonObstaclePlayableTile();
+                }
             }
         }
     }
