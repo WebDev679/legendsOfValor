@@ -51,6 +51,57 @@ public class LoVBoard {
         return TeleportResult.SUCCESS;
     }
 
+    public boolean isHeroOnHeroNexus(Hero hero) {
+        int idx = heroes.indexOf(hero);
+        if (idx < 0) return false;
+
+        int r = heroRow[idx];
+        int c = heroCol[idx];
+
+        if (!(grid[r][c] instanceof NexusTile)) return false;
+
+        NexusTile tile = (NexusTile) grid[r][c];
+        return tile.getOwner() == NexusTile.Owner.HERO;
+    }
+
+    public boolean isHeroOnMonsterNexus(Hero hero) {
+        int idx = heroes.indexOf(hero);
+        if (idx < 0) return false;
+
+        int r = heroRow[idx];
+        int c = heroCol[idx];
+
+        if (!(grid[r][c] instanceof NexusTile)) return false;
+
+        NexusTile tile = (NexusTile) grid[r][c];
+        return tile.getOwner() == NexusTile.Owner.MONSTER;
+    }
+
+    public boolean anyMonsterOnHeroNexus() {
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+
+            int r = ms.row;
+            int c = ms.col;
+
+            if (grid[r][c] instanceof NexusTile) {
+                NexusTile tile = (NexusTile) grid[r][c];
+                if (tile.getOwner() == NexusTile.Owner.HERO) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean anyHeroOnMonsterNexus() {
+        for (Hero hero : heroes) {
+            if (!hero.isAlive()) continue;
+
+            if (isHeroOnMonsterNexus(hero)) return true;
+        }
+        return false;
+    }
 
     public enum TeleportResult { SUCCESS, INVALID }
     public enum RecallResult { SUCCESS, INVALID }
@@ -421,7 +472,10 @@ public class LoVBoard {
         grid[nr][nc].onEnter(heroes.get(i));
         heroes.get(i).setPosition(new Position(nr, nc));
 
-        if (nr == 0) return WorldEvent.HERO_WIN;
+//        if (nr == 0) return WorldEvent.HERO_WIN;
+        if(isHeroOnHeroNexus(heroes.get(i))){
+            return WorldEvent.HERO_WIN;
+        }
         if (heroMonsterAdjacent(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
 //        if (laneCollisionAt(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
 
@@ -492,7 +546,9 @@ public class LoVBoard {
                 return WorldEvent.BATTLE_TRIGGERED;
             }
 
-            if (nr == SIZE - 1) return WorldEvent.MONSTER_WIN;
+            if (anyMonsterOnHeroNexus()){
+                return WorldEvent.MONSTER_WIN;
+            }
         }
 
         if (roundCounter % difficulty.getSpawnInterval() == 0) {

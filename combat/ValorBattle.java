@@ -24,6 +24,11 @@ import util.PrintUtils;
 public class ValorBattle {
     /** Monster AI behaviour controller*/
     private final MonsterAI monsterAI = new MonsterAI();
+    public enum BattleResult {
+        ONGOING,
+        HERO_VICTORY,
+        MONSTER_VICTORY,
+    }
 
     /**
      * Resolve one combat round
@@ -35,7 +40,7 @@ public class ValorBattle {
      * @param actionManager provider for hero actions (can be player driven or automated)
      * @throws QuitBattleException If quit action issued, then we throw this error
      */
-    public void resolveRound(
+    public BattleResult resolveRound(
             List<Hero> heroes,
             List<Monster> monsters,
             HeroActionManager actionManager
@@ -77,6 +82,13 @@ public class ValorBattle {
         for (Hero hero : heroes) {
             hero.regenAfterRound();
         }
+
+        boolean anyHeroAlive = heroes.stream().anyMatch(Hero::isAlive);
+        boolean anyMonsterAlive = monsters.stream().anyMatch(Monster::isAlive);
+        if (!anyMonsterAlive) return BattleResult.HERO_VICTORY;
+        if (!anyHeroAlive) return BattleResult.MONSTER_VICTORY;
+
+        return BattleResult.ONGOING;
     }
 
     private void respawnHero(Hero hero) {
@@ -121,7 +133,7 @@ public class ValorBattle {
             Monster target = attack.getTarget();
 
             if (!target.isAlive()) return;
-            if (!ValorCombatRules.canAttack(attacker, target)) return;
+//            if (!ValorCombatRules.canAttack(attacker, target)) return;
 
             ValorCombatExecutor.heroAttack(attacker, target);
             return;
@@ -133,7 +145,7 @@ public class ValorBattle {
             Monster target = spellcast.getTarget();
 
             if (!target.isAlive()) return;
-            if (!ValorCombatRules.canAttack(caster, target)) return;
+//            if (!ValorCombatRules.canAttack(caster, target)) return;
 
             ValorCombatExecutor.heroCastSpell(
                     caster,

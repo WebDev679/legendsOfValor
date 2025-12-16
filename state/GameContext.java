@@ -29,15 +29,11 @@ public class GameContext {
     }
 
     public boolean monsterReachedHeroNexus() {
-        // If any LoV monster reaches bottom row, LoVBoard will return MONSTER_WIN.
-        // Keep this for later refinement.
-        return false;
+        return lovBoard != null && lovBoard.anyMonsterOnHeroNexus();
     }
 
     public boolean heroReachedEnemyNexus() {
-        // If any LoV hero reaches top row, LoVBoard will return HERO_WIN.
-        // Keep this for later refinement.
-        return false;
+        return lovBoard != null && lovBoard.anyHeroOnMonsterNexus();
     }
 
     public boolean hasAliveHeroes() {
@@ -64,8 +60,7 @@ public class GameContext {
      * can be implemented once the map and Nexus tiles are in place.</p>
      */
     public boolean isHeroOnNexus(Hero hero) {
-        // TODO: implement actual Nexus position checks once map logic is in place.
-        return false;
+        return lovBoard != null && lovBoard.isHeroOnHeroNexus(hero);
     }
 
     /**

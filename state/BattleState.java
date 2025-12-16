@@ -43,11 +43,19 @@ public class BattleState implements GameState {
     @Override
     public void update() {
         try {
-            battle.resolveRound(
+            ValorBattle.BattleResult result = battle.resolveRound(
                     heroes,
                     monsters,
                     context.actionManager
             );
+            if (result == ValorBattle.BattleResult.HERO_VICTORY){
+                StringBuilder heroesStr = new StringBuilder();
+                for (Hero hero : heroes) {
+                    heroesStr.append(hero.getName()).append(", ");
+                }
+                System.out.println("Heroes " + heroesStr.toString() + " won battle!");
+                distributeRewards(heroes, monsters);
+            }
             context.round++;
 
         } catch (RuntimeException e) {
@@ -96,6 +104,41 @@ public class BattleState implements GameState {
         }
     }
 
+    public final class RewardCalculator {
+        public static int xpFor(Monster m) {
+            return m.getLevel() * 20;
+        }
+
+        public static int goldFor(Monster m) {
+            return m.getLevel() * 10;
+        }
+    }
+
+    private void distributeRewards(List<Hero> heroes, List<Monster> monsters) {
+        int totalXp = monsters.stream().filter(
+                monster -> !monster.isAlive())
+                .mapToInt(RewardCalculator::xpFor).sum();
+
+
+        int totalGold = monsters.stream().filter(
+                        monster -> !monster.isAlive())
+                .mapToInt(RewardCalculator::goldFor).sum();
+
+        int aliveHeroes = (int) heroes.stream().filter(Hero::isAlive).count();
+        if (aliveHeroes == 0) return;
+
+        int xpEach = totalXp / aliveHeroes;
+        int goldEach = totalGold / aliveHeroes;
+
+        for (Hero hero : heroes) {
+            if (!hero.isAlive()) continue;
+            hero.gainExperience(xpEach);
+            hero.addGold(goldEach);
+            System.out.println(
+                    hero.getName() + " gained " + xpEach + " XP and " + goldEach + " gold."
+            );
+        }
+    }
     @Override
     public void exit() {
         context.actionManager = previousActionManager;

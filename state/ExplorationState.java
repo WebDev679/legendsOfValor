@@ -79,6 +79,11 @@ public class ExplorationState implements GameState {
         }
 
         handleWorldEvent(heroEvent);
+        Hero actingHero = context.heroes.get(heroIndex);
+        if(context.isHeroOnNexus(actingHero)) {
+            stateManager.changeState(new MarketState(context, stateManager, board));
+            return;
+        }
 
         heroesActedThisRound++;
 
