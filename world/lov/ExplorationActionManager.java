@@ -2,6 +2,7 @@ package world.lov;
 
 import java.util.Scanner;
 
+import character.Hero;
 import combat.action.QuitAction;
 import world.lov.action.*;
 
@@ -15,50 +16,53 @@ public class ExplorationActionManager {
     }
 
     public ExplorationAction nextAction(LoVBoard board){
-        while (true) {
+        for (Hero hero: board.getHeroes()){
+            while (true) {
 
-            System.out.print("Enter hero index: 1-" + board.getHeroCount() + ", Q to quit");
+                System.out.print("Enter hero index: 1-" + board.getHeroCount() + ", Q to quit");
 
-            String input = scanner.nextLine().trim().toLowerCase();
+                String input = scanner.nextLine().trim().toLowerCase();
 
-            if (input.equals("q")) {
-                return new QuitGameAction();
-            }
+                if (input.equals("q")) {
+                    return new QuitGameAction();
+                }
 
-            int heroIndex;
+                int heroIndex;
 
-            try {
-                heroIndex = Integer.parseInt(input) - 1;
-            } catch (NumberFormatException e) {
-                return null;
-            }
+                try {
+                    heroIndex = Integer.parseInt(input) - 1;
+                } catch (NumberFormatException e) {
+                    return null;
+                }
 
-            System.out.println("Action: W (up), S (down), T (teleport), R (recall), Q (quit)");
-            String actionInput = scanner.nextLine().trim().toLowerCase();
+                System.out.println("Action: W (up), S (down), T (teleport), R (recall), Q (quit)");
+                String actionInput = scanner.nextLine().trim().toLowerCase();
 
-            if (actionInput.isEmpty()){
-                return null;
-            }
+                if (actionInput.isEmpty()){
+                    return null;
+                }
 
-            if (actionInput.equals("q")) {
-                return new QuitGameAction();
-            }
+                if (actionInput.equals("q")) {
+                    return new QuitGameAction();
+                }
 
-            char action = actionInput.charAt(0);
+                char action = actionInput.charAt(0);
 
-            switch (action){
-                case 'w':
-                    return new MoveAction(heroIndex, Direction.UP);
-                case 's':
-                    return new MoveAction(heroIndex, Direction.DOWN);
-                case 'r':
-                    return new RecallAction(heroIndex);
-                case 't':
-                    return promptTeleport(heroIndex, board);
-                default:
-                    System.out.println("Invalid action!");
+                switch (action){
+                    case 'w':
+                        return new MoveAction(heroIndex, Direction.UP);
+                    case 's':
+                        return new MoveAction(heroIndex, Direction.DOWN);
+                    case 'r':
+                        return new RecallAction(heroIndex);
+                    case 't':
+                        return promptTeleport(heroIndex, board);
+                    default:
+                        System.out.println("Invalid action!");
+                }
             }
         }
+        return null;
     }
 
     private ExplorationAction promptTeleport(int heroIndex, LoVBoard board){

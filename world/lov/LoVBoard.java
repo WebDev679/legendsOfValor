@@ -167,6 +167,18 @@ public class LoVBoard {
         spawnMonstersInitial();
     }
 
+    public List<Hero> getHeroes(){
+        return Collections.unmodifiableList(this.heroes);
+    }
+
+    public List<Monster> getMonsters(){
+        List<Monster> monsterList = new ArrayList<>();
+        for (MonsterSlot slot: monsters) {
+            monsterList.add(slot.monster);
+        }
+        return Collections.unmodifiableList(monsterList);
+    }
+
     /* ================= BOARD INIT ================= */
 
     private void initBoard() {
