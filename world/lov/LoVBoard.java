@@ -1,13 +1,88 @@
 package world.lov;
 
 import character.Hero;
+import character.Monster;
+import factory.MonsterFactory;
 import world.mh.*;
 import world.lov.renderer.AsciiBoardRenderer;
+import ai.MonsterAI;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class LoVBoard {
 
+    public RecallResult recallHero(int i) {
+        if (heroRow[i] == SIZE - 1) return RecallResult.INVALID;
+
+        int lane = laneOfCol(heroCol[i]);
+
+        grid[heroRow[i]][heroCol[i]].onExit(heroes.get(i));
+        placeHeroAtNexus(i, lane);
+
+        return RecallResult.SUCCESS;
+    }
+
+
+    public TeleportResult teleportHero(int from, int to, int rowOffset) {
+        if (from == to) return TeleportResult.INVALID;
+
+        int targetR = heroRow[to] + rowOffset;
+        int targetC = heroCol[to];
+
+        if (!tileAccessible(targetR, targetC)) return TeleportResult.INVALID;
+        if (heroOccupies(targetR, targetC, from)) return TeleportResult.INVALID;
+
+        // Cannot teleport behind a monster in the same column
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (ms.col == targetC && ms.row > targetR) {
+                return TeleportResult.INVALID;
+            }
+        }
+
+        grid[heroRow[from]][heroCol[from]].onExit(heroes.get(from));
+        heroRow[from] = targetR;
+        heroCol[from] = targetC;
+        grid[targetR][targetC].onEnter(heroes.get(from));
+
+        return TeleportResult.SUCCESS;
+    }
+
+
+    public enum TeleportResult { SUCCESS, INVALID }
+    public enum RecallResult { SUCCESS, INVALID }
+
+    public static int[] columnsInLane(int lane) {
+        switch (lane) {
+            case 0: return new int[]{0, 1};
+            case 1: return new int[]{3, 4};
+            case 2: return new int[]{6, 7};
+            default: throw new IllegalArgumentException("Invalid lane: " + lane);
+        }
+    }
+
+    public char getOccupant(int r, int c) {
+        // Heroes take priority in rendering
+        for (int i = 0; i < heroes.size(); i++) {
+            if (!heroes.get(i).isAlive()) continue;
+            if (heroRow[i] == r && heroCol[i] == c) {
+                return 'H';
+            }
+        }
+
+        // Then monsters
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (ms.row == r && ms.col == c) {
+                return 'M';
+            }
+        }
+
+        return grid[r][c].getSymbol();
+    }
     /* ================= DIFFICULTY ================= */
 
     public enum Difficulty {
@@ -29,70 +104,116 @@ public class LoVBoard {
     /* ================= CONSTANTS ================= */
 
     public static final int SIZE = 8;
-
-    // Lane layout: 0 1 |2| 3 4 |5| 6 7
-    private static final int[] LANE_START_COLS = {0, 3, 6};
     private static final int[] INACCESSIBLE_COLS = {2, 5};
 
-    /* ================= STATE ================= */
+    private static final int[][] LANE_COLS = {
+            {0, 1},
+            {3, 4},
+            {6, 7}
+    };
+
+    /* ================= INTERNAL STATE ================= */
+
+    private static final class MonsterSlot {
+        final Monster monster;
+        int row;
+        int col;
+
+        MonsterSlot(Monster monster, int row, int col) {
+            this.monster = monster;
+            this.row = row;
+            this.col = col;
+        }
+    }
 
     private final Tile[][] grid;
     private final List<Hero> heroes;
     private final Difficulty difficulty;
+    private final Random rand;
 
-    private final int[] heroRow, heroCol;
-    private final int[] monsterRow, monsterCol;
+    private final int[] heroRow;
+    private final int[] heroCol;
 
+    private final List<MonsterSlot> monsters = new ArrayList<>();
     private final AsciiBoardRenderer renderer;
 
     private int lastCollisionLane = -1;
     private int roundCounter = 0;
+    private int[] laneSpineCol = new int[3];
 
     /* ================= CONSTRUCTOR ================= */
 
     public LoVBoard(List<Hero> heroes, Difficulty difficulty) {
+        this(heroes, difficulty, new Random());
+    }
+
+    public LoVBoard(List<Hero> heroes, Difficulty difficulty, Random rand) {
         this.heroes = heroes;
         this.difficulty = difficulty;
+        this.rand = rand;
 
-        int n = heroes.size();
-        heroRow = new int[n];
-        heroCol = new int[n];
-        monsterRow = new int[n];
-        monsterCol = new int[n];
+        this.heroRow = new int[heroes.size()];
+        this.heroCol = new int[heroes.size()];
 
-        grid = new Tile[SIZE][SIZE];
-        renderer = new AsciiBoardRenderer(this);
+        this.grid = new Tile[SIZE][SIZE];
+        this.renderer = new AsciiBoardRenderer(this);
+        for (int lane = 0; lane < 3; lane++) {
+            int[] cols = colsInLane(lane);
+            laneSpineCol[lane] = cols[rand.nextInt(2)];
+        }
 
         initBoard();
         spawnHeroes();
-        spawnMonsters();
+        spawnMonstersInitial();
     }
 
-    /* ================= INITIALIZATION ================= */
+    /* ================= BOARD INIT ================= */
 
     private void initBoard() {
+        // Choose one guaranteed-open (spine) column per lane.
+        int[] laneSpine = new int[3];
+        for (int lane = 0; lane < 3; lane++) {
+            int[] cols = colsInLane(lane);
+            laneSpine[lane] = cols[rand.nextInt(2)];
+        }
+
         for (int r = 0; r < SIZE; r++) {
-            for (int c = 0; c < SIZE; c++) {
+            // Hard walls stay hard walls.
+            grid[r][2] = new InaccessibleTile();
+            grid[r][5] = new InaccessibleTile();
 
-                if (isInaccessibleColumn(c)) {
-                    grid[r][c] = new InaccessibleTile();
-                    continue;
-                }
+            // Fill each lane.
+            for (int lane = 0; lane < 3; lane++) {
+                int[] cols = colsInLane(lane);
+                int spineCol = laneSpine[lane];
+                int otherCol = (cols[0] == spineCol) ? cols[1] : cols[0];
 
-                if (r == SIZE - 1) {
-                    grid[r][c] = new NexusTile(NexusTile.Owner.HERO);
-                    continue;
-                }
-
+                // Nexus rows: no obstacles, ever.
                 if (r == 0) {
-                    grid[r][c] = new NexusTile(NexusTile.Owner.MONSTER);
+                    grid[r][spineCol] = new NexusTile(NexusTile.Owner.MONSTER);
+                    grid[r][otherCol] = new NexusTile(NexusTile.Owner.MONSTER);
+                    continue;
+                }
+                if (r == SIZE - 1) {
+                    grid[r][spineCol] = new NexusTile(NexusTile.Owner.HERO);
+                    grid[r][otherCol] = new NexusTile(NexusTile.Owner.HERO);
                     continue;
                 }
 
-                grid[r][c] = LoVTileFactory.createPlayableTile();
+                // Middle rows: spine must be traversable (not obstacle).
+                grid[r][spineCol] = LoVTileFactory.createNonObstaclePlayableTile();
+
+
+                // Optionally block only the other column. Never block both.
+                boolean blockOther = rand.nextBoolean(); // tune probability if you want
+                grid[r][otherCol] = blockOther ? new ObstacleTile() : LoVTileFactory.createPlayableTile();
             }
         }
     }
+
+
+
+
 
     private boolean isInaccessibleColumn(int c) {
         for (int x : INACCESSIBLE_COLS) {
@@ -101,76 +222,260 @@ public class LoVBoard {
         return false;
     }
 
+    private static int laneOfCol(int col) {
+        if (col <= 1) return 0;
+        if (col <= 4) return 1;
+        return 2;
+    }
+
+    private static int[] colsInLane(int lane) {
+        return LANE_COLS[lane];
+    }
+
+    /* ================= SPAWNS ================= */
+
     private void spawnHeroes() {
         for (int i = 0; i < heroes.size(); i++) {
-            heroRow[i] = SIZE - 1;
-            heroCol[i] = LANE_START_COLS[i];
+            placeHeroAtNexus(i, i % 3);
         }
     }
 
-    private void spawnMonsters() {
-        for (int i = 0; i < heroes.size(); i++) {
-            monsterRow[i] = 0;
-            monsterCol[i] = LANE_START_COLS[i];
+    private void placeHeroAtNexus(int heroIndex, int lane) {
+        int row = SIZE - 1;
+        int[] cols = colsInLane(lane);
+
+        int chosen = cols[0];
+        if (heroOccupies(row, cols[0], heroIndex)) {
+            chosen = cols[1];
+        } else if (!heroOccupies(row, cols[1], heroIndex)) {
+            chosen = cols[rand.nextInt(2)];
         }
+
+        heroRow[heroIndex] = row;
+        heroCol[heroIndex] = chosen;
+    }
+
+    private void spawnMonstersInitial() {
+        monsters.clear();
+
+        int maxHeroLevel = heroes.stream().mapToInt(Hero::getLevel).max().orElse(1);
+
+        for (int lane = 0; lane < Math.min(heroes.size(), 3); lane++) {
+            Monster m = MonsterFactory.spawnSingle(maxHeroLevel);
+            int col = colsInLane(lane)[rand.nextInt(2)];
+            monsters.add(new MonsterSlot(m, 0, col));
+        }
+    }
+
+
+    private void spawnMonsters() {
+        int maxHeroLevel = heroes.stream().mapToInt(Hero::getLevel).max().orElse(1);
+
+        for (int lane = 0; lane < Math.min(heroes.size(), 3); lane++) {
+            Monster m = MonsterFactory.spawnSingle(maxHeroLevel);
+            int col = colsInLane(lane)[rand.nextInt(2)];
+            monsters.add(new MonsterSlot(m, 0, col));
+        }
+    }
+
+    /* ================= MOVEMENT HELPERS ================= */
+
+    private boolean valid(int r, int c) {
+        return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+    }
+
+    private boolean tileAccessible(int r, int c) {
+        return valid(r, c) && grid[r][c].isAccessible();
+    }
+
+    private boolean heroOccupies(int r, int c) {
+        return heroOccupies(r, c, -1);
+    }
+
+    private boolean heroOccupies(int r, int c, int ignoreHero) {
+        for (int i = 0; i < heroes.size(); i++) {
+            if (i == ignoreHero) continue;
+            if (!heroes.get(i).isAlive()) continue;
+            if (heroRow[i] == r && heroCol[i] == c) return true;
+        }
+        return false;
+    }
+
+    private boolean monsterOccupies(int r, int c, MonsterSlot ignore) {
+        for (MonsterSlot ms : monsters) {
+            if (ms == ignore) continue;
+            if (!ms.monster.isAlive()) continue;
+            if (ms.row == r && ms.col == c) return true;
+        }
+        return false;
+    }
+
+    /* ===== Correct spec rule ===== */
+    private boolean monsterAheadInLane(int heroRow, int lane) {
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (laneOfCol(ms.col) != lane) continue;
+            if (heroRow - ms.row == 1) return true;
+        }
+        return false;
+    }
+
+    private boolean isObstacleAhead(int monsterR, int monsterC) {
+        int nr = monsterR + 1;
+        int nc = monsterC;
+
+        if (!valid(nr, nc)) return true;
+        return !grid[nr][nc].isAccessible();
+    }
+
+    private boolean heroDirectlyAhead(int monsterR, int monsterC) {
+        int nextRow = monsterR + 1;
+        int lane = laneOfCol(monsterC);
+
+        for (int i = 0; i < heroes.size(); i++) {
+            if (!heroes.get(i).isAlive()) continue;
+            if (laneOfCol(heroCol[i]) != lane) continue;
+            if (heroRow[i] == nextRow){
+                System.out.println(heroRow[i] + " " + heroCol[i] + " " + monsterC);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean heroMonsterAdjacent(int heroRow, int heroCol) {
+        int lane = laneOfCol(heroCol);
+
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (laneOfCol(ms.col) != lane) continue;
+
+            if (Math.abs(ms.row - heroRow) == 1) {
+                lastCollisionLane = lane;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean heroMonsterAdjacentOld(int monsterRow, int monsterCol) {
+        int lane = laneOfCol(monsterCol);
+
+        for (int i = 0; i < heroes.size(); i++) {
+            if (!heroes.get(i).isAlive()) continue;
+            if (laneOfCol(heroCol[i]) != lane) continue;
+
+            if (Math.abs(heroRow[i] - monsterRow) == 1) {
+                lastCollisionLane = lane;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean laneCollisionAt(int r, int c) {
+        int lane = laneOfCol(c);
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
+            if (ms.row == r && laneOfCol(ms.col) == lane) {
+                lastCollisionLane = lane;
+                return true;
+            }
+        }
+        return false;
     }
 
     /* ================= HERO MOVEMENT ================= */
 
     public WorldEvent moveHero(int i, Direction d) {
-
         int oldR = heroRow[i];
         int oldC = heroCol[i];
 
         int nr = oldR + d.dr;
-        int nc = oldC;
+        int nc = oldC + d.dc;
 
-        if (!valid(nr, nc)) return WorldEvent.NONE;
-        if (!grid[nr][nc].isAccessible()) return WorldEvent.NONE;
+        if (!tileAccessible(nr, nc)) return WorldEvent.NONE;
+        if (heroOccupies(nr, nc, i)) return WorldEvent.NONE;
+
+        if (d.dr < 0) {
+            int lane = laneOfCol(oldC);
+            if (monsterAheadInLane(oldR, lane)) return WorldEvent.NONE;
+        }
 
         grid[oldR][oldC].onExit(heroes.get(i));
-
         heroRow[i] = nr;
         heroCol[i] = nc;
-
         grid[nr][nc].onEnter(heroes.get(i));
 
         if (nr == 0) return WorldEvent.HERO_WIN;
-        if (collides(i)) return WorldEvent.BATTLE_TRIGGERED;
+        if (heroMonsterAdjacent(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
+//        if (laneCollisionAt(nr, nc)) return WorldEvent.BATTLE_TRIGGERED;
 
         return WorldEvent.NONE;
     }
 
-    /* ================= MONSTER AI MOVEMENT ================= */
+    /* ================= MONSTER MOVEMENT ================= */
 
-    public WorldEvent moveMonstersAI() {
+    public WorldEvent moveMonstersAI(MonsterAI ai) {
         roundCounter++;
 
-        for (int i = 0; i < monsterRow.length; i++) {
+        for (MonsterSlot ms : monsters) {
+            if (!ms.monster.isAlive()) continue;
 
-            int r = monsterRow[i];
-            int c = monsterCol[i];
-            int nr = r + 1;
+            int lane = laneOfCol(ms.col);
+            boolean forwardBlocked = heroDirectlyAhead(ms.row, ms.col) || isObstacleAhead(ms.row, ms.col);
 
-            if (!valid(nr, c)) continue;
-            if (!grid[nr][c].isAccessible()) continue;
+            System.out.println("FOrward blocked: " + forwardBlocked);
+            MonsterMove move = ai.decideMove(
+                    ms.monster, ms.row, ms.col, lane, forwardBlocked
+            );
+            System.out.println("Move row " + move.newRow + " col: " + move.newColumn);
 
-            boolean occupied = false;
-            for (int j = 0; j < monsterRow.length; j++) {
-                if (monsterRow[j] == nr && monsterCol[j] == c) {
-                    occupied = true;
-                    break;
-                }
+            if (move == null) continue;
+
+            int nr = move.newRow;
+            int nc = move.newColumn;
+
+            if (!valid(nr, nc)){
+                System.out.println("move invalid");
+                continue;
             }
-            if (occupied) continue;
+            if (!grid[nr][nc].isAccessible()) {
+                System.out.println("move inaccessible");
+                System.out.println(
+                        "Tile at (" + nr + "," + nc + ") = " +
+                                grid[nr][nc].getClass().getSimpleName()
+                );
+                continue;
+            }
+            if (laneOfCol(nc) != lane){
+                System.out.println("lane mismatch");
+                continue;
+            }
+            if (heroOccupies(nr, nc)){
+                System.out.println("hero occupying lane");
+                continue;
+            };
+            if (monsterOccupies(nr, nc, ms)){
+                System.out.println("monster occupying lane");
+                continue;
+            }
+            if (nr > ms.row && forwardBlocked){
+                System.out.println("monster forward blocked");
+                continue;
+            }
 
-            monsterRow[i] = nr;
+            ms.row = nr;
+            ms.col = nc;
+
+//            if (laneCollisionAt(nr, nc)){
+            if (heroMonsterAdjacent(nr, nc)){
+                return WorldEvent.BATTLE_TRIGGERED;
+            }
 
             if (nr == SIZE - 1) return WorldEvent.MONSTER_WIN;
-            if (collides(i)) return WorldEvent.BATTLE_TRIGGERED;
         }
 
-        // Difficulty-based respawn
         if (roundCounter % difficulty.getSpawnInterval() == 0) {
             spawnMonsters();
         }
@@ -178,97 +483,42 @@ public class LoVBoard {
         return WorldEvent.NONE;
     }
 
-    /* ================= COLLISION ================= */
+    public List<Hero> getHeroesInBattleLane() {
+        if (lastCollisionLane < 0) return Collections.emptyList();
 
-    private boolean collides(int i) {
-        if (heroRow[i] == monsterRow[i] && heroCol[i] == monsterCol[i]) {
-            lastCollisionLane = i;
-            return true;
+        List<Hero> result = new ArrayList<>();
+        for (int i = 0; i < heroes.size(); i++) {
+            if (!heroes.get(i).isAlive()) continue;
+            if (laneOfCol(heroCol[i]) == lastCollisionLane) {
+                result.add(heroes.get(i));
+            }
         }
-        return false;
+        return result;
+    }
+
+    /* ================= API ================= */
+
+    public int getHeroCount() {
+        return heroes.size();
     }
 
     public int getLastCollisionLane() {
         return lastCollisionLane;
     }
 
-    public void removeMonsterAtLastCollision() {
-        if (lastCollisionLane >= 0 && lastCollisionLane < monsterRow.length) {
-            monsterRow[lastCollisionLane] = -1;
-            monsterCol[lastCollisionLane] = -1;
-            lastCollisionLane = -1;
+    public List<Monster> getMonstersInBattleLane() {
+        if (lastCollisionLane < 0) return Collections.emptyList();
+
+        List<Monster> result = new ArrayList<>();
+        for (MonsterSlot ms : monsters) {
+            if (ms.monster.isAlive() && laneOfCol(ms.col) == lastCollisionLane) {
+                result.add(ms.monster);
+            }
         }
-    }
-
-    /* ================= TELEPORT ================= */
-
-    public enum TeleportResult { SUCCESS, INVALID }
-
-    public TeleportResult teleportHero(int from, int to, int rowOffset) {
-
-        if (from == to) return TeleportResult.INVALID;
-
-        int targetR = heroRow[to] + rowOffset;
-        int targetC = heroCol[to];
-
-        if (!valid(targetR, targetC)) return TeleportResult.INVALID;
-        if (!grid[targetR][targetC].isAccessible()) return TeleportResult.INVALID;
-
-        for (int i = 0; i < heroes.size(); i++) {
-            if (heroRow[i] == targetR && heroCol[i] == targetC)
-                return TeleportResult.INVALID;
-        }
-
-        for (int i = 0; i < monsterRow.length; i++) {
-            if (monsterCol[i] == targetC && monsterRow[i] > targetR)
-                return TeleportResult.INVALID;
-        }
-
-        grid[heroRow[from]][heroCol[from]].onExit(heroes.get(from));
-        heroRow[from] = targetR;
-        heroCol[from] = targetC;
-        grid[targetR][targetC].onEnter(heroes.get(from));
-
-        return TeleportResult.SUCCESS;
-    }
-
-    /* ================= RECALL ================= */
-
-    public enum RecallResult { SUCCESS, INVALID }
-
-    public RecallResult recallHero(int i) {
-        if (heroRow[i] == SIZE - 1) return RecallResult.INVALID;
-
-        grid[heroRow[i]][heroCol[i]].onExit(heroes.get(i));
-        heroRow[i] = SIZE - 1;
-        heroCol[i] = LANE_START_COLS[i];
-
-        return RecallResult.SUCCESS;
-    }
-
-    /* ================= RENDERING ================= */
-
-    public char getOccupant(int r, int c) {
-        for (int i = 0; i < heroes.size(); i++) {
-            if (heroRow[i] == r && heroCol[i] == c) return 'H';
-        }
-        for (int i = 0; i < heroes.size(); i++) {
-            if (monsterRow[i] == r && monsterCol[i] == c) return 'M';
-        }
-        return grid[r][c].getSymbol();
+        return result;
     }
 
     public void render() {
         renderer.render();
-    }
-
-    /* ================= API FIX ================= */
-
-    public int getHeroCount() {
-        return heroes.size();
-    }
-
-    private boolean valid(int r, int c) {
-        return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
     }
 }
