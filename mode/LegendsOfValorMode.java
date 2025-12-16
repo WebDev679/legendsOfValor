@@ -3,12 +3,7 @@ package mode;
 import character.Hero;
 import state.*;
 import world.lov.LoVBoard;
-
-import java.util.List;
-import engine.GameEngine;
-import state.ExplorationState;
-import state.GameContext;
-import state.StateManager;
+import java.util.*;
 
 public class LegendsOfValorMode implements GameMode {
 
@@ -17,11 +12,9 @@ public class LegendsOfValorMode implements GameMode {
         GameContext gameContext = new GameContext();
         StateManager stateManager = new StateManager(gameContext);
 
-        /*
-         * TEMPORARY:
-         * Heroes must already exist in context.heroes
-         * (loaded by partner / DataLoader / factory)
-         */
+        Scanner sc = new Scanner(System.in);
+        HeroSelectionMenu menu = new HeroSelectionMenu(sc);
+        gameContext.heroes = menu.chooseHeroes(3);
         List<Hero> heroes = gameContext.heroes;
 
         if (heroes == null || heroes.isEmpty()) {

@@ -1,26 +1,29 @@
 package state;
 
+import ai.MonsterAI;
 import character.Hero;
-import factory.MonsterFactory;
-import util.DataLoader;
-
-import java.util.Random;
+import character.Monster;
 import world.lov.*;
-import java.util.Scanner;
+import world.lov.action.*;
 
+import java.util.List;
+import java.util.Scanner;
 
 public class ExplorationState implements GameState {
 
     private final GameContext context;
     private final StateManager stateManager;
     private final LoVBoard board;
+    private final ExplorationActionManager actionManager;
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final MonsterAI monsterAI = new MonsterAI();
+    private int heroesActedThisRound= 0;
 
     public ExplorationState(GameContext context, StateManager stateManager, LoVBoard board) {
         this.context = context;
         this.stateManager = stateManager;
         this.board = board;
+        this.actionManager = new ExplorationActionManager(new Scanner(System.in), this.board);
     }
 
     @Override
@@ -30,118 +33,90 @@ public class ExplorationState implements GameState {
 
     @Override
     public void update() {
-
         board.render();
+        int heroIndex = heroesActedThisRound;
 
-        System.out.print("Select hero (1-" + board.getHeroCount() + ", Q to quit): ");
-        String heroInput = scanner.nextLine().trim().toUpperCase();
+        System.out.println("Choose an action for " + context.heroes.get(heroIndex).getName());
+        ExplorationAction action = actionManager.nextAction(board, heroIndex);
+        if (action == null) return;
 
-        if (heroInput.equals("Q")) {
+        if (action instanceof QuitGameAction) {
             context.gameRunning = false;
+            stateManager.changeState(new GameOverState(context));
             return;
         }
 
-        int heroIndex;
-        try {
-            heroIndex = Integer.parseInt(heroInput) - 1;
-        } catch (NumberFormatException e) {
+        WorldEvent heroEvent = WorldEvent.NONE;
+        boolean actionSucceeded = true;
+
+        if (action instanceof MoveAction) {
+            MoveAction move = (MoveAction) action;
+            heroEvent = board.moveHero(move.heroIndex, move.direction);
+        }
+
+        else if (action instanceof TeleportAction) {
+            TeleportAction t = (TeleportAction) action;
+            LoVBoard.TeleportResult r =
+                    board.teleportHero(t.fromHero, t.toHero, t.rowOffset);
+
+            if (r == LoVBoard.TeleportResult.INVALID) {
+                System.out.println("Invalid teleport.");
+                actionSucceeded = false;
+            }
+        }
+
+        else if (action instanceof RecallAction) {
+            RecallAction recall = (RecallAction) action;
+            LoVBoard.RecallResult r = board.recallHero(recall.heroIndex);
+
+            if (r == LoVBoard.RecallResult.INVALID) {
+                System.out.println("Invalid recall.");
+                actionSucceeded = false;
+            }
+        }
+        if ((!actionSucceeded)) {
             return;
         }
 
-        if (heroIndex < 0 || heroIndex >= board.getHeroCount()) {
+        handleWorldEvent(heroEvent);
+        Hero actingHero = context.heroes.get(heroIndex);
+        if(context.isHeroOnNexus(actingHero)) {
+            stateManager.changeState(new MarketState(context, stateManager, board));
             return;
         }
 
-        System.out.print("Action: W (up), S (down), T (teleport), R (recall): ");
-        String actionInput = scanner.nextLine().trim().toUpperCase();
+        heroesActedThisRound++;
 
-        if (actionInput.isEmpty()) return;
-
-        char action = actionInput.charAt(0);
-
-        /* ================= MOVE ================= */
-        if (action == 'W' || action == 'S') {
-
-            Direction dir = (action == 'W') ? Direction.UP : Direction.DOWN;
-
-            WorldEvent heroEvent = board.moveHero(heroIndex, dir);
-            if (handleWorldEvent(heroEvent)) return;
-
-            WorldEvent monsterEvent = board.moveMonstersAI();
+        if (heroesActedThisRound == board.getHeroCount()){
+            WorldEvent monsterEvent = board.moveMonstersAI(monsterAI);
             handleWorldEvent(monsterEvent);
-            return;
+            heroesActedThisRound = 0;
         }
 
-        /* ================= TELEPORT ================= */
-        if (action == 'T') {
-
-            System.out.print("Teleport to which hero (1-" + board.getHeroCount() + "): ");
-            String targetInput = scanner.nextLine().trim();
-
-            int targetHero;
-            try {
-                targetHero = Integer.parseInt(targetInput) - 1;
-            } catch (NumberFormatException e) {
-                return;
-            }
-
-            if (targetHero < 0 || targetHero >= board.getHeroCount()) return;
-
-            System.out.print("Row offset (-1 for above, 1 for below): ");
-            String offsetInput = scanner.nextLine().trim();
-
-            int offset;
-            try {
-                offset = Integer.parseInt(offsetInput);
-            } catch (NumberFormatException e) {
-                return;
-            }
-
-            LoVBoard.TeleportResult result =
-                    board.teleportHero(heroIndex, targetHero, offset);
-
-            if (result == LoVBoard.TeleportResult.INVALID) {
-                System.out.println("Teleport failed.");
-            }
-
-            WorldEvent monsterEvent = board.moveMonstersAI();
-            handleWorldEvent(monsterEvent);
-//            context.monsters = MonsterFactory.spawnWave(heroesCount, maxLevel);
-//            stateManager.changeState(new BattleState(context, stateManager));
-
-            return;
-        }
-
-        /* ================= RECALL ================= */
-        if (action == 'R') {
-
-            LoVBoard.RecallResult result = board.recallHero(heroIndex);
-
-            if (result == LoVBoard.RecallResult.INVALID) {
-                System.out.println("Recall failed.");
-            }
-
-            WorldEvent monsterEvent = board.moveMonstersAI();
-            handleWorldEvent(monsterEvent);
-        }
     }
 
-    private boolean handleWorldEvent(WorldEvent event) {
+    private void handleWorldEvent(WorldEvent event) {
 
         if (event == WorldEvent.BATTLE_TRIGGERED) {
+            List<Hero> battleHeroes = board.getHeroesInBattleLane();
+            List<Monster> battleMonsters = board.getMonstersInBattleLane();
+
             stateManager.changeState(
-                    new BattleState(context, stateManager, board)
+                    new BattleState(
+                            context,
+                            stateManager,
+                            board,
+                            battleHeroes,
+                            battleMonsters
+                    )
             );
-            return true;
+
         }
 
         if (event == WorldEvent.HERO_WIN || event == WorldEvent.MONSTER_WIN) {
-            stateManager.changeState(new GameOverState(context));
             context.gameRunning = false;
-            return true;
+            stateManager.changeState(new GameOverState(context));
         }
-
-        return false;
     }
 
     @Override

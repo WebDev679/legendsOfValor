@@ -8,6 +8,5 @@ public class Position {
     public Position(int row, int col, int lane) {
         this.row = row;
         this.col = col;
-        this.lane = lane;
     }
 }

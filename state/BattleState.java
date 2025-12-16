@@ -1,11 +1,14 @@
 package state;
 
+import character.Hero;
+import character.Monster;
 import combat.HeroActionManager;
 import combat.PlayerActionManager;
 import combat.QuitBattleException;
 import combat.ValorBattle;
 import world.lov.LoVBoard;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class BattleState implements GameState {
@@ -16,30 +19,43 @@ public class BattleState implements GameState {
 
     private final ValorBattle battle = new ValorBattle();
     private HeroActionManager previousActionManager;
+    private final List<Hero> heroes;
+    private final List<Monster> monsters;
 
-    public BattleState(GameContext context, StateManager stateManager, LoVBoard board) {
+    public BattleState(GameContext context, StateManager stateManager, LoVBoard board,  List<Hero> heroes, List<Monster> monsters) {
         this.context = context;
         this.stateManager = stateManager;
         this.board = board;
+        this.heroes = heroes;
+        this.monsters = monsters;
     }
 
 
     @Override
     public void enter() {
         System.out.println("Entered battle phase");
+        board.render();
         previousActionManager = context.actionManager;
         context.actionManager =
-                new PlayerActionManager(new Scanner(System.in), context.monsters);
+                new PlayerActionManager(new Scanner(System.in), this.monsters);
     }
 
     @Override
     public void update() {
         try {
-            battle.resolveRound(
-                    context.heroes,
-                    context.monsters,
+            ValorBattle.BattleResult result = battle.resolveRound(
+                    heroes,
+                    monsters,
                     context.actionManager
             );
+            if (result == ValorBattle.BattleResult.HERO_VICTORY){
+                StringBuilder heroesStr = new StringBuilder();
+                for (Hero hero : heroes) {
+                    heroesStr.append(hero.getName()).append(", ");
+                }
+                System.out.println("Heroes " + heroesStr.toString() + " won battle!");
+                distributeRewards(heroes, monsters);
+            }
             context.round++;
 
         } catch (RuntimeException e) {
@@ -56,7 +72,7 @@ public class BattleState implements GameState {
         // If monster is defeated, remove it from board
         if (!context.hasAliveMonsters()) {
 
-            board.removeMonsterAtLastCollision();
+//            board.removeMonsterAtLastCollision();
 
             context.monsters.clear();
 
@@ -88,6 +104,41 @@ public class BattleState implements GameState {
         }
     }
 
+    public final class RewardCalculator {
+        public static int xpFor(Monster m) {
+            return m.getLevel() * 20;
+        }
+
+        public static int goldFor(Monster m) {
+            return m.getLevel() * 10;
+        }
+    }
+
+    private void distributeRewards(List<Hero> heroes, List<Monster> monsters) {
+        int totalXp = monsters.stream().filter(
+                monster -> !monster.isAlive())
+                .mapToInt(RewardCalculator::xpFor).sum();
+
+
+        int totalGold = monsters.stream().filter(
+                        monster -> !monster.isAlive())
+                .mapToInt(RewardCalculator::goldFor).sum();
+
+        int aliveHeroes = (int) heroes.stream().filter(Hero::isAlive).count();
+        if (aliveHeroes == 0) return;
+
+        int xpEach = totalXp / aliveHeroes;
+        int goldEach = totalGold / aliveHeroes;
+
+        for (Hero hero : heroes) {
+            if (!hero.isAlive()) continue;
+            hero.gainExperience(xpEach);
+            hero.addGold(goldEach);
+            System.out.println(
+                    hero.getName() + " gained " + xpEach + " XP and " + goldEach + " gold."
+            );
+        }
+    }
     @Override
     public void exit() {
         context.actionManager = previousActionManager;
