@@ -1,5 +1,5 @@
 package combat;
-import world.Position;
+import world.mh.Position;
 
 /**
  * Responsible for determining whether 2 positions are close enough to have combat

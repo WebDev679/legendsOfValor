@@ -1,4 +1,5 @@
 package combat.action;
+import character.Monster;
 
 /**
  * Interface to represent a single action

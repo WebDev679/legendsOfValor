@@ -1,6 +1,6 @@
 package character;// character.Character.java
 
-import world.Position;
+import world.mh.Position;
 
 public abstract class Character {
     protected String name;

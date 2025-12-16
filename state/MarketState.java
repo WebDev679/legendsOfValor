@@ -9,6 +9,7 @@ import item.Potion;
 import item.Spell;
 import item.Weapon;
 import util.DataLoader;
+import world.lov.LoVBoard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,12 @@ public class MarketState implements GameState {
     private final GameContext context;
     private final StateManager stateManager;
     private final Scanner scanner = new Scanner(System.in);
+    private world.lov.LoVBoard board;
 
-    public MarketState(GameContext context, StateManager stateManager) {
+    public MarketState(GameContext context, StateManager stateManager, LoVBoard board) {
         this.context = context;
         this.stateManager = stateManager;
+        this.board = board;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class MarketState implements GameState {
 
         if (!context.anyHeroOnNexus()) {
             System.out.println("No hero is currently standing on a Nexus. Market is unavailable.");
-            stateManager.changeState(new ExplorationState(context, stateManager));
+            stateManager.changeState(new ExplorationState(context, stateManager, board));
             return;
         }
 
@@ -50,12 +53,12 @@ public class MarketState implements GameState {
     public void update() {
         if (!context.anyHeroOnNexus()) {
             System.out.println("Heroes have left the Nexus. Leaving market.");
-            stateManager.changeState(new ExplorationState(context, stateManager));
+            stateManager.changeState(new ExplorationState(context, stateManager, board));
             return;
         }
 
         runMarketLoop();
-        stateManager.changeState(new ExplorationState(context, stateManager));
+        stateManager.changeState(new ExplorationState(context, stateManager, board));
     }
 
     @Override

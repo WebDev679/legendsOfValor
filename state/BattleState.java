@@ -4,18 +4,23 @@ import combat.HeroActionManager;
 import combat.PlayerActionManager;
 import combat.QuitBattleException;
 import combat.ValorBattle;
+import world.lov.LoVBoard;
 
 import java.util.Scanner;
 
 public class BattleState implements GameState {
+
     private final GameContext context;
-    private final ValorBattle battle = new ValorBattle();
     private final StateManager stateManager;
+    private final LoVBoard board;
+
+    private final ValorBattle battle = new ValorBattle();
     private HeroActionManager previousActionManager;
 
-    public BattleState(GameContext context, StateManager stateManager) {
+    public BattleState(GameContext context, StateManager stateManager, LoVBoard board) {
         this.context = context;
         this.stateManager = stateManager;
+        this.board = board;
     }
 
 
@@ -23,7 +28,8 @@ public class BattleState implements GameState {
     public void enter() {
         System.out.println("Entered battle phase");
         previousActionManager = context.actionManager;
-        context.actionManager = new PlayerActionManager(new Scanner(System.in), context.monsters);
+        context.actionManager =
+                new PlayerActionManager(new Scanner(System.in), context.monsters);
     }
 
     @Override
@@ -34,7 +40,7 @@ public class BattleState implements GameState {
                     context.monsters,
                     context.actionManager
             );
-            context.round ++;
+            context.round++;
 
         } catch (RuntimeException e) {
             context.gameRunning = false;
@@ -45,31 +51,46 @@ public class BattleState implements GameState {
             stateManager.changeState(new GameOverState(context));
         }
 
-        if (context.heroReachedEnemyNexus()) {
-            System.out.println("Heroes win!");
-            context.gameRunning = false;
-            stateManager.changeState(new GameOverState(context));
-            return;
-        }
+        // ================= POST-BATTLE CHECK =================
 
-        if (context.monsterReachedHeroNexus()) {
-            System.out.println("Monsters win!");
-            context.gameRunning = false;
-            stateManager.changeState(new GameOverState(context));
-            return;
-        }
+        // If monster is defeated, remove it from board
+        if (!context.hasAliveMonsters()) {
 
-        if (context.hasAliveHeroes() && context.hasAliveMonsters()){
-            return;
+            board.removeMonsterAtLastCollision();
+
+            context.monsters.clear();
+
+            // Resume exploration
+            stateManager.changeState(
+                    new ExplorationState(context, stateManager, board)
+            );
+            if (context.heroReachedEnemyNexus()) {
+                System.out.println("Heroes win!");
+                context.gameRunning = false;
+                stateManager.changeState(new GameOverState(context));
+                return;
+            }
+
+            if (context.monsterReachedHeroNexus()) {
+                System.out.println("Monsters win!");
+                context.gameRunning = false;
+                stateManager.changeState(new GameOverState(context));
+                return;
+            }
+
+            if (context.hasAliveHeroes() && context.hasAliveMonsters()) {
+                return;
+            }
+            context.monsters.clear();
+            stateManager.changeState(
+                    new ExplorationState(context, stateManager, board)
+            );
         }
-        context.monsters.clear();
-        stateManager.changeState(
-                new ExplorationState(context, stateManager)
-        );
     }
 
     @Override
     public void exit() {
         context.actionManager = previousActionManager;
+        System.out.println("Exiting Battle State");
     }
 }

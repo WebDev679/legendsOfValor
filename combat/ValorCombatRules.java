@@ -1,6 +1,6 @@
 package combat;
 import character.Character;
-import world.Position;
+import world.mh.Position;
 
 /**
  * Encapsulates combat related rule checks for legends of valor

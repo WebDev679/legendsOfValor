@@ -4,6 +4,7 @@ import character.Monster;
 import util.DataLoader;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Factory class for creating {@link Monster} instances for game.
