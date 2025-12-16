@@ -103,6 +103,13 @@ public class LoVBoard {
         return false;
     }
 
+    public void advanceRound() {
+        roundCounter++;
+        if (roundCounter % difficulty.getSpawnInterval() == 0) {
+            spawnMonsters();
+        }
+    }
+
     public enum TeleportResult { SUCCESS, INVALID }
     public enum RecallResult { SUCCESS, INVALID }
 

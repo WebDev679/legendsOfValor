@@ -88,6 +88,7 @@ public class ExplorationState implements GameState {
         heroesActedThisRound++;
 
         if (heroesActedThisRound == board.getHeroCount()){
+            board.advanceRound();
             WorldEvent monsterEvent = board.moveMonstersAI(monsterAI);
             handleWorldEvent(monsterEvent);
             heroesActedThisRound = 0;
