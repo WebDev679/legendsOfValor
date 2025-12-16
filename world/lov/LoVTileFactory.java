@@ -18,4 +18,12 @@ public class LoVTileFactory {
         if (r < 0.85) return new KoulouTile();
         return new ObstacleTile();
     }
+
+    public static Tile createNonObstaclePlayableTile() {
+        Tile t;
+        do {
+            t = LoVTileFactory.createPlayableTile();
+        } while (!t.isAccessible()); // obstacles should be inaccessible
+        return t;
+    }
 }
