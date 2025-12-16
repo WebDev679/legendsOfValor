@@ -34,4 +34,12 @@ public abstract class Monster extends Character {
         dodgeChance = dodgeChance * factor;
         if (dodgeChance < 0) dodgeChance = 0;
     }
+
+    public void setMaxHp(int newMaxHp) {
+        this.maxHp = newMaxHp;
+    }
+
+    public void setHp(int newHp) {
+        this.hp = newHp;
+    }
 }

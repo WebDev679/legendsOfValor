@@ -341,6 +341,22 @@ public class LoVBoard {
         heroCol[heroIndex] = chosen;
     }
 
+    private void scaleMonsterStats(Monster m) {
+        int heroCount = heroes.size();
+        int roundFactor = Math.max(1, roundCounter / 5);
+
+        double hpMultiplier =
+                difficulty == Difficulty.HARD ? 3.0 :
+                        difficulty == Difficulty.MEDIUM ? 2.2 : 1.8;
+
+        hpMultiplier += 0.3 * heroCount;
+        hpMultiplier += 0.2 * roundFactor;
+
+        int newMaxHp = (int)(m.getMaxHp() * hpMultiplier);
+        m.setMaxHp(newMaxHp);
+        m.setHp(newMaxHp);
+    }
+
     private void spawnMonstersInitial() {
         monsters.clear();
 
@@ -348,6 +364,7 @@ public class LoVBoard {
 
         for (int lane = 0; lane < Math.min(heroes.size(), 3); lane++) {
             Monster m = MonsterFactory.spawnSingle(maxHeroLevel);
+            scaleMonsterStats(m);
             int col = colsInLane(lane)[rand.nextInt(2)];
             monsters.add(new MonsterSlot(m, 0, col));
         }
@@ -361,6 +378,7 @@ public class LoVBoard {
             if (laneHasAliveMonster(lane)) continue;
 
             Monster m = MonsterFactory.spawnSingle(maxHeroLevel);
+            scaleMonsterStats(m);
             int col = colsInLane(lane)[rand.nextInt(2)];
             monsters.add(new MonsterSlot(m, 0, col));
         }    }

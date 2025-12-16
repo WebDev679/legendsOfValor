@@ -37,7 +37,7 @@ public final class DamageCalculator {
             weaponDamage = weapon.getDamage();
         }
 
-        double base = (hero.getStrength()* 1.5 + weaponDamage);
+        double base = weaponDamage + hero.getStrength() * 0.6 ;
         double factor = 100.0 / (100.0 + target.getDefense());
         return Math.max(1, (int)(base * factor));
     }
