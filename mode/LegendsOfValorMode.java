@@ -17,14 +17,12 @@ public class LegendsOfValorMode implements GameMode {
         GameContext gameContext = new GameContext();
         StateManager stateManager = new StateManager(gameContext);
 
-        GameContext context = new GameContext();
-
         /*
          * TEMPORARY:
          * Heroes must already exist in context.heroes
          * (loaded by partner / DataLoader / factory)
          */
-        List<Hero> heroes = context.heroes;
+        List<Hero> heroes = gameContext.heroes;
 
         if (heroes == null || heroes.isEmpty()) {
             System.out.println("No heroes loaded. Exiting LoV mode.");
@@ -32,16 +30,15 @@ public class LegendsOfValorMode implements GameMode {
         }
 
         // ✅ Difficulty is selected HERE
-        context.lovBoard = new LoVBoard(
+        gameContext.lovBoard = new LoVBoard(
                 heroes,
                 LoVBoard.Difficulty.MEDIUM
         );
 
-        StateManager sm = new StateManager(context);
-        sm.changeState(new ExplorationState(context, sm, context.lovBoard));
+        stateManager.changeState(new ExplorationState(gameContext, stateManager, gameContext.lovBoard));
 
-        while (context.gameRunning) {
-            sm.update();
+        while (gameContext.gameRunning) {
+            stateManager.update();
         }
     }
 }
