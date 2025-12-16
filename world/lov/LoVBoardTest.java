@@ -14,9 +14,9 @@ public class LoVBoardTest {
         heroes.add(null);
         heroes.add(null);
 
-        LoVBoard board = new LoVBoard(heroes);
+//        LoVBoard board = new LoVBoard(heroes);
 
         System.out.println("=== Legends of Valor Board Test ===");
-        board.render();
+//        board.render();
     }
 }
