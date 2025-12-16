@@ -232,7 +232,7 @@ public class LoVBoard {
             }
         }
     }
-
+    
 
 
 
@@ -245,9 +245,15 @@ public class LoVBoard {
     }
 
     private static int laneOfCol(int col) {
-        if (col <= 1) return 0;
-        if (col <= 4) return 1;
-        return 2;
+        for (int lane = 0; lane < LANE_COLS.length; lane++) {
+            for (int c : LANE_COLS[lane]) {
+                if (c == col) return lane;
+            }
+        }
+        throw new IllegalArgumentException("Column " + col + " is not part of any lane");
+       // if (col <= 1) return 0;
+        //if (col <= 4) return 1;
+        //return 2;
     }
 
     private static int[] colsInLane(int lane) {
