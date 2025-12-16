@@ -15,7 +15,7 @@ public class LegendsOfValorMode implements GameMode {
     @Override
     public void start() {
         GameContext gameContext = new GameContext();
-        StateManager stateManager = new StateManager();
+        StateManager stateManager = new StateManager(gameContext);
 
         GameContext context = new GameContext();
 

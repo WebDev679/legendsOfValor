@@ -3,8 +3,10 @@ package combat;
 import combat.action.*;
 import character.Hero;
 import character.Monster;
+import item.Armor;
 import item.Potion;
 import item.Spell;
+import item.Weapon;
 
 import java.util.ArrayList;
 import java.util.List;
