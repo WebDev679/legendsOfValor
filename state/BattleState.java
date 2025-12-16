@@ -2,10 +2,7 @@ package state;
 
 import character.Hero;
 import character.Monster;
-import combat.HeroActionManager;
-import combat.PlayerActionManager;
-import combat.QuitBattleException;
-import combat.ValorBattle;
+import combat.*;
 import world.lov.LoVBoard;
 
 import java.util.List;
@@ -104,27 +101,24 @@ public class BattleState implements GameState {
         }
     }
 
-    public final class RewardCalculator {
-        public static int xpFor(Monster m) {
-            return m.getLevel() * 20;
-        }
-
-        public static int goldFor(Monster m) {
-            return m.getLevel() * 10;
-        }
-    }
 
     private void distributeRewards(List<Hero> heroes, List<Monster> monsters) {
-        int totalXp = monsters.stream().filter(
-                monster -> !monster.isAlive())
-                .mapToInt(RewardCalculator::xpFor).sum();
+        int totalXp = 0;
+        int totalGold = 0;
 
+        for (Monster monster : monsters) {
+            if (!monster.isAlive()) {
+                totalXp += RewardCalculator.xpFor(monster);
+                totalGold += RewardCalculator.goldFor(monster);
+            }
+        }
 
-        int totalGold = monsters.stream().filter(
-                        monster -> !monster.isAlive())
-                .mapToInt(RewardCalculator::goldFor).sum();
-
-        int aliveHeroes = (int) heroes.stream().filter(Hero::isAlive).count();
+        int aliveHeroes = 0;
+        for  (Hero hero : heroes) {
+            if (hero.isAlive()) {
+                aliveHeroes++;
+            }
+        }
         if (aliveHeroes == 0) return;
 
         int xpEach = totalXp / aliveHeroes;
