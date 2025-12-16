@@ -188,6 +188,11 @@ public class LoVBoard {
             int[] cols = colsInLane(lane);
             laneSpine[lane] = cols[rand.nextInt(2)];
         }
+        // Choose exactly ONE obstacle row per lane (not nexus rows)
+        int[] obstacleRowForLane = new int[3];
+        for (int lane = 0; lane < 3; lane++) {
+            obstacleRowForLane[lane] = 1 + rand.nextInt(SIZE - 2);
+        }
 
         for (int r = 0; r < SIZE; r++) {
             // Hard walls stay hard walls.
@@ -217,12 +222,17 @@ public class LoVBoard {
 
 
                 // Optionally block only the other column. Never block both.
-                boolean blockOther = rand.nextBoolean(); // tune probability if you want
-                grid[r][otherCol] = blockOther ? new ObstacleTile() : LoVTileFactory.createPlayableTile();
+                //boolean blockOther = rand.nextBoolean(); // tune probability if you want
+                //grid[r][otherCol] = blockOther ? new ObstacleTile() : LoVTileFactory.createPlayableTile();
+                if (r == obstacleRowForLane[lane]) {
+                    grid[r][otherCol] = new ObstacleTile();
+                } else {
+                    grid[r][otherCol] = LoVTileFactory.createNonObstaclePlayableTile();
+                }
             }
         }
     }
-
+    
 
 
 
@@ -235,9 +245,15 @@ public class LoVBoard {
     }
 
     private static int laneOfCol(int col) {
-        if (col <= 1) return 0;
-        if (col <= 4) return 1;
-        return 2;
+        for (int lane = 0; lane < LANE_COLS.length; lane++) {
+            for (int c : LANE_COLS[lane]) {
+                if (c == col) return lane;
+            }
+        }
+        throw new IllegalArgumentException("Column " + col + " is not part of any lane");
+       // if (col <= 1) return 0;
+        //if (col <= 4) return 1;
+        //return 2;
     }
 
     private static int[] colsInLane(int lane) {
