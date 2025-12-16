@@ -34,8 +34,10 @@ public class ExplorationState implements GameState {
     @Override
     public void update() {
         board.render();
+        int heroIndex = heroesActedThisRound;
 
-        ExplorationAction action = actionManager.nextAction(board);
+        System.out.println("Choose an action for " + context.heroes.get(heroIndex).getName());
+        ExplorationAction action = actionManager.nextAction(board, heroIndex);
         if (action == null) return;
 
         if (action instanceof QuitGameAction) {
@@ -72,12 +74,13 @@ public class ExplorationState implements GameState {
                 actionSucceeded = false;
             }
         }
+        if ((!actionSucceeded)) {
+            return;
+        }
 
         handleWorldEvent(heroEvent);
 
-        if (action instanceof RecallAction || action instanceof TeleportAction || action instanceof MoveAction) {
-            heroesActedThisRound++;
-        }
+        heroesActedThisRound++;
 
         if (heroesActedThisRound == board.getHeroCount()){
             WorldEvent monsterEvent = board.moveMonstersAI(monsterAI);
@@ -102,17 +105,6 @@ public class ExplorationState implements GameState {
                             battleMonsters
                     )
             );
-
-//            context.monsters.clear();
-//            context.monsters.addAll(board.getMonstersInBattleLane());
-
-//            stateManager.changeState(
-//                    new BattleState(context, stateManager, board)
-//            );
-
-
-
-
 
         }
 
