@@ -15,27 +15,10 @@ public class ExplorationActionManager {
         this.scanner = scanner;
     }
 
-    public ExplorationAction nextAction(LoVBoard board){
-        for (Hero hero: board.getHeroes()){
+    public ExplorationAction nextAction(LoVBoard board, int heroIndex){
+        for (Hero _ : board.getHeroes()){
             while (true) {
-
-                System.out.print("Enter hero index: 1-" + board.getHeroCount() + ", Q to quit");
-
-                String input = scanner.nextLine().trim().toLowerCase();
-
-                if (input.equals("q")) {
-                    return new QuitGameAction();
-                }
-
-                int heroIndex;
-
-                try {
-                    heroIndex = Integer.parseInt(input) - 1;
-                } catch (NumberFormatException e) {
-                    return null;
-                }
-
-                System.out.println("Action: W (up), S (down), T (teleport), R (recall), Q (quit)");
+                System.out.println("Action: W (up), S (down), A (left), D (right), T (teleport), R (recall), Q (quit)");
                 String actionInput = scanner.nextLine().trim().toLowerCase();
 
                 if (actionInput.isEmpty()){
@@ -53,6 +36,10 @@ public class ExplorationActionManager {
                         return new MoveAction(heroIndex, Direction.UP);
                     case 's':
                         return new MoveAction(heroIndex, Direction.DOWN);
+                    case 'd':
+                        return new MoveAction(heroIndex, Direction.RIGHT);
+                    case 'a':
+                        return new MoveAction(heroIndex, Direction.LEFT);
                     case 'r':
                         return new RecallAction(heroIndex);
                     case 't':
